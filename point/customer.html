@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>會員專屬服務中心 - 點數與優惠查詢</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -55,7 +54,6 @@
         <!-- 查詢成功後的歡迎與點數列表區塊 -->
         <div id="customer-query-result" class="space-y-6 hidden">
             
-            <!-- 帶有 xxx先生/小姐 的專屬歡迎橫幅 -->
             <div class="bg-gradient-to-r from-indigo-900 to-indigo-800 text-white p-6 sm:p-8 rounded-2xl shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div class="space-y-1">
                     <span class="text-xs uppercase tracking-widest text-indigo-300 font-semibold">Member Portal</span>
@@ -69,54 +67,58 @@
 
             <div class="flex justify-between items-center px-1">
                 <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wider">各分店點數資產與規則總覽</h4>
-                <span class="text-xs text-slate-400 font-medium">資料即時同步更新</span>
+                <span class="text-xs text-emerald-600 font-medium">● 即時連線同步中</span>
             </div>
 
             <!-- 各店點數卡片容器 -->
-            <div id="customer-cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- 動態生成 -->
-            </div>
+            <div id="customer-cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </div>
 
     </main>
 
-    <!-- 頁尾 -->
     <footer class="text-center py-6 text-xs text-slate-400 border-t border-slate-200 mt-auto">
         &copy; 2026 多店點數整合系統. All Rights Reserved.
     </footer>
 
-    <!-- 邏輯腳本 -->
+    <!-- 邏輯腳本 (完全空白初始化) -->
     <script>
+        let currentSearchedPhone = null;
+
+        function getDb() {
+            let db = JSON.parse(localStorage.getItem('pos_db'));
+            if (!db) {
+                db = {
+                    stores: [],
+                    rules: {},
+                    customers: {}
+                };
+                localStorage.setItem('pos_db', JSON.stringify(db));
+            }
+            return db;
+        }
+
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'pos_db' && currentSearchedPhone) {
+                renderResults(currentSearchedPhone);
+            }
+        });
+
         function queryCustomerPoints() {
             const phone = document.getElementById('query-phone-input').value.trim();
-            const loginCard = document.getElementById('login-card');
-            const resultBox = document.getElementById('customer-query-result');
-            const container = document.getElementById('customer-cards-container');
-
             if (!phone) {
                 alert('請輸入您的手機號碼！');
                 return;
             }
+            currentSearchedPhone = phone;
+            renderResults(phone);
+        }
 
-            let db = JSON.parse(localStorage.getItem('pos_db'));
+        function renderResults(phone) {
+            const loginCard = document.getElementById('login-card');
+            const resultBox = document.getElementById('customer-query-result');
+            const container = document.getElementById('customer-cards-container');
 
-            if (!db || !db.stores || db.stores.length === 0) {
-                db = {
-                    stores: [
-                        { name: "台北旗艦店", taxId: "12345678", code: "store01" },
-                        { name: "台中逢甲店", taxId: "87654321", code: "store02" }
-                    ],
-                    rules: {
-                        "store01": { earnRate: 100, redeemRate: 1 },
-                        "store02": { earnRate: 50, redeemRate: 2 }
-                    },
-                    customers: {
-                        "store01": { "0912345678": { name: "王小明", points: 50, updated: "2026-10-24" } },
-                        "store02": { "0912345678": { name: "王小明", points: 120, updated: "2026-10-24" } }
-                    }
-                };
-                localStorage.setItem('pos_db', JSON.stringify(db));
-            }
+            let db = getDb();
 
             let customerName = null;
             for (let storeCode in db.customers) {
@@ -138,10 +140,15 @@
             resultBox.classList.remove('hidden');
             container.innerHTML = '';
 
+            if (db.stores.length === 0) {
+                container.innerHTML = `<div class="col-span-2 text-center py-8 text-slate-400 bg-white rounded-2xl border border-slate-200/80">目前系統尚未建立任何分店</div>`;
+                return;
+            }
+
             db.stores.forEach(store => {
-                const storeCustomers = db.customers[store.code] || {};
+                const storeCustomers = (db.customers && db.customers[store.code]) ? db.customers[store.code] : {};
                 const customerData = storeCustomers[phone] || { points: 0, updated: '尚無交易紀錄' };
-                const rule = db.rules[store.code] || { earnRate: 100, redeemRate: 1 };
+                const rule = (db.rules && db.rules[store.code]) ? db.rules[store.code] : { earnRate: 100, redeemRate: 1 };
 
                 container.innerHTML += `
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 hover:shadow-md transition flex flex-col justify-between space-y-4">
@@ -174,6 +181,7 @@
         }
 
         function resetQuery() {
+            currentSearchedPhone = null;
             document.getElementById('login-card').classList.remove('hidden');
             document.getElementById('customer-query-result').classList.add('hidden');
             document.getElementById('query-phone-input').value = '';
