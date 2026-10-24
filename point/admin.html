@@ -168,11 +168,10 @@
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 space-y-5">
                     <h3 class="text-lg font-bold text-slate-900">👤 選擇會員與點數管理</h3>
                     
-                    <!-- 系統化選擇會員下拉選單 -->
                     <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-1">從清單選擇會員（或新增）</label>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">從清單選擇現有會員</label>
                         <select id="member-select" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-600 focus:bg-white focus:outline-none" onchange="onMemberSelected()">
-                            <option value="">-- 請選擇現有會員或下方手動輸入 --</option>
+                            <option value="">-- 請選擇會員或下方手動輸入 --</option>
                         </select>
                     </div>
 
@@ -233,20 +232,25 @@
 
     <!-- 邏輯腳本 -->
     <script>
-        let db = JSON.parse(localStorage.getItem('pos_db')) || {
-            stores: [
-                { name: "台北旗艦店", taxId: "12345678", code: "store01" },
-                { name: "台中逢甲店", taxId: "87654321", code: "store02" }
-            ],
-            rules: {
-                "store01": { earnRate: 100, redeemRate: 1 },
-                "store02": { earnRate: 50, redeemRate: 2 }
-            },
-            customers: {
-                "store01": { "0912345678": { name: "王小明", points: 50, updated: "2026-10-24" } },
-                "store02": { "0912345678": { name: "王小明", points: 120, updated: "2026-10-24" } }
-            }
-        };
+        let db = JSON.parse(localStorage.getItem('pos_db'));
+
+        if (!db || !db.stores || db.stores.length === 0) {
+            db = {
+                stores: [
+                    { name: "台北旗艦店", taxId: "12345678", code: "store01" },
+                    { name: "台中逢甲店", taxId: "87654321", code: "store02" }
+                ],
+                rules: {
+                    "store01": { earnRate: 100, redeemRate: 1 },
+                    "store02": { earnRate: 50, redeemRate: 2 }
+                },
+                customers: {
+                    "store01": { "0912345678": { name: "王小明", points: 50, updated: "2026-10-24" } },
+                    "store02": { "0912345678": { name: "王小明", points: 120, updated: "2026-10-24" } }
+                }
+            };
+            localStorage.setItem('pos_db', JSON.stringify(db));
+        }
 
         function saveDb() {
             localStorage.setItem('pos_db', JSON.stringify(db));
@@ -387,7 +391,6 @@
             alert('該分店專屬規則已成功更新！');
         }
 
-        // 渲染會員清單與下拉選單
         function renderCustomerList() {
             const tbody = document.getElementById('customer-list-table');
             const selectEl = document.getElementById('member-select');
@@ -404,7 +407,6 @@
 
             keys.forEach(phone => {
                 const c = storeCustomers[phone];
-                // 填入表格
                 tbody.innerHTML += `
                     <tr class="hover:bg-indigo-50/50 transition cursor-pointer" onclick="selectMember('${phone}', '${c.name}')">
                         <td class="py-3 px-4 font-semibold text-slate-900">${c.name}</td>
@@ -413,12 +415,10 @@
                         <td class="py-3 px-4 text-right text-slate-400 text-xs">${c.updated}</td>
                     </tr>
                 `;
-                // 填入下拉選單
                 selectEl.innerHTML += `<option value="${phone}">${c.name} (${phone}) - ${c.points}點</option>`;
             });
         }
 
-        // 從下拉選單或表格選取會員時自動填入輸入框
         function selectMember(phone, name) {
             document.getElementById('customer-phone').value = phone;
             document.getElementById('customer-name').value = name;
@@ -469,7 +469,6 @@
             alert('會員點數與紀錄更新成功！');
         }
 
-        // 刪除會員功能
         function deleteSelectedCustomer() {
             const phone = document.getElementById('customer-phone').value.trim();
             if (!phone) {
