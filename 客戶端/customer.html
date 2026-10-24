@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>客戶端 - 會員專屬服務中心</title>
+    <title>客戶端 - 雲端即時會員查詢</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -19,112 +19,109 @@
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
 
-    <!-- 頂部質感導覽列 -->
     <header class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
         <div class="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
             <div class="flex items-center space-x-2">
                 <span class="text-2xl">💎</span>
-                <h1 class="text-lg font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent tracking-tight">會員專屬服務中心</h1>
+                <h1 class="text-lg font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent tracking-tight">會員專屬雲端服務中心</h1>
             </div>
-            <!-- 指向同層上層再進監管者資料夾的路徑 -->
             <a href="../監管者/admin.html" class="text-xs font-medium text-slate-500 hover:text-indigo-600 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full transition">監管端登入 ↗</a>
         </div>
     </header>
 
-    <!-- 主要內容區 -->
     <main class="max-w-4xl mx-auto px-6 py-10 flex-grow w-full space-y-8">
         
-        <!-- 登入與查詢區塊 -->
         <section id="login-card" class="bg-white p-8 sm:p-10 rounded-2xl shadow-sm border border-slate-200/80 space-y-6 text-center max-w-xl mx-auto transition-all">
             <div class="space-y-2">
-                <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto text-xl font-bold shadow-inner mb-4">📱</div>
-                <h2 class="text-2xl font-bold text-slate-900 tracking-tight">快速查詢會員點數</h2>
-                <p class="text-sm text-slate-500">請輸入您的手機號碼，立即解鎖您的專屬點數與權益。</p>
+                <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto text-xl font-bold shadow-inner mb-4">☁️</div>
+                <h2 class="text-2xl font-bold text-slate-900 tracking-tight">即時查詢會員點數</h2>
+                <p class="text-sm text-slate-500">輸入手機號碼，同步抓取雲端各分店點數與規則。</p>
             </div>
             
             <div class="space-y-4 pt-2">
-                <div class="relative">
-                    <input type="text" id="query-phone-input" placeholder="請輸入手機號碼 (例: 0912345678)" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3.5 text-center text-lg tracking-wider font-medium focus:ring-2 focus:ring-indigo-600 focus:bg-white focus:outline-none transition">
-                </div>
+                <input type="text" id="query-phone-input" placeholder="請輸入手機號碼 (例: 0912345678)" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3.5 text-center text-lg tracking-wider font-medium focus:ring-2 focus:ring-indigo-600 focus:bg-white focus:outline-none transition">
                 <button onclick="queryCustomerPoints()" class="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-semibold py-3.5 rounded-xl transition shadow-md shadow-indigo-200">
                     立即查詢點數
                 </button>
             </div>
         </section>
 
-        <!-- 查詢成功後的歡迎與點數列表區塊 -->
         <div id="customer-query-result" class="space-y-6 hidden">
-            
             <div class="bg-gradient-to-r from-indigo-900 to-indigo-800 text-white p-6 sm:p-8 rounded-2xl shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div class="space-y-1">
-                    <span class="text-xs uppercase tracking-widest text-indigo-300 font-semibold">Member Portal</span>
+                    <span class="text-xs uppercase tracking-widest text-indigo-300 font-semibold">Cloud Member Portal</span>
                     <h3 id="welcome-message" class="text-2xl font-bold tracking-tight">您好，貴賓</h3>
-                    <p id="display-phone-sub" class="text-xs text-indigo-200">已驗證手機：0912345678</p>
+                    <p id="display-phone-sub" class="text-xs text-indigo-200">已驗證手機</p>
                 </div>
-                <button onclick="resetQuery()" class="text-xs bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl transition border border-white/10">
-                    切換查詢號碼
-                </button>
+                <button onclick="resetQuery()" class="text-xs bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl transition border border-white/10">切換號碼</button>
             </div>
 
             <div class="flex justify-between items-center px-1">
                 <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wider">各分店點數資產與規則總覽</h4>
-                <span class="text-xs text-emerald-600 font-medium">● 即時連線同步中</span>
+                <span class="text-xs text-emerald-600 font-medium">● 雲端即時同步中</span>
             </div>
 
-            <!-- 各店點數卡片容器 -->
             <div id="customer-cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </div>
 
     </main>
 
     <footer class="text-center py-6 text-xs text-slate-400 border-t border-slate-200 mt-auto">
-        &copy; 2026 多店整合系統. All Rights Reserved.
+        &copy; 2026 多店雲端整合系統. All Rights Reserved.
     </footer>
 
-    <!-- 邏輯腳本 -->
-    <script>
-        let currentSearchedPhone = null;
+    <!-- Firebase 邏輯腳本 (使用最新 Modular SDK) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js";
 
-        function getDb() {
-            let db = JSON.parse(localStorage.getItem('pos_db'));
-            if (!db) {
-                db = {
-                    stores: [],
-                    rules: {},
-                    customers: {}
-                };
-                localStorage.setItem('pos_db', JSON.stringify(db));
+        const firebaseConfig = {
+            apiKey: "AIzaSyCF7wR7POu3uCZZob_HQxl6dBP79n0YZFc",
+            authDomain: "pos-system-2e0c2.firebaseapp.com",
+            databaseURL: "https://pos-system-2e0c2-default-rtdb.firebaseio.com",
+            projectId: "pos-system-2e0c2",
+            storageBucket: "pos-system-2e0c2.firebasestorage.app",
+            messagingSenderId: "491150417656",
+            appId: "1:491150417656:web:e6f1c6cf3aab6f18cfe50d",
+            measurementId: "G-745N7CJZ68"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const dbRef = ref(database);
+
+        window.globalDb = { stores: [], rules: {}, customers: {} };
+        window.currentSearchedPhone = null;
+
+        // 即時監聽雲端資料庫
+        onValue(dbRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                window.globalDb = data;
+            } else {
+                window.globalDb = { stores: [], rules: {}, customers: {} };
             }
-            return db;
-        }
-
-        window.addEventListener('storage', function(e) {
-            if (e.key === 'pos_db' && currentSearchedPhone) {
-                renderResults(currentSearchedPhone);
+            if (window.currentSearchedPhone) {
+                renderResults(window.currentSearchedPhone);
             }
         });
 
-        function queryCustomerPoints() {
+        window.queryCustomerPoints = function() {
             const phone = document.getElementById('query-phone-input').value.trim();
-            if (!phone) {
-                alert('請輸入您的手機號碼！');
-                return;
-            }
-            currentSearchedPhone = phone;
+            if (!phone) { alert('請輸入手機號碼！'); return; }
+            window.currentSearchedPhone = phone;
             renderResults(phone);
-        }
+        };
 
         function renderResults(phone) {
             const loginCard = document.getElementById('login-card');
             const resultBox = document.getElementById('customer-query-result');
             const container = document.getElementById('customer-cards-container');
 
-            let db = getDb();
-
             let customerName = null;
-            for (let storeCode in db.customers) {
-                if (db.customers[storeCode][phone] && db.customers[storeCode][phone].name) {
-                    customerName = db.customers[storeCode][phone].name;
+            for (let storeCode in window.globalDb.customers) {
+                if (window.globalDb.customers[storeCode][phone] && window.globalDb.customers[storeCode][phone].name) {
+                    customerName = window.globalDb.customers[storeCode][phone].name;
                     break;
                 }
             }
@@ -141,15 +138,15 @@
             resultBox.classList.remove('hidden');
             container.innerHTML = '';
 
-            if (db.stores.length === 0) {
-                container.innerHTML = `<div class="col-span-2 text-center py-8 text-slate-400 bg-white rounded-2xl border border-slate-200/80">目前系統尚未建立任何分店</div>`;
+            if (!window.globalDb.stores || window.globalDb.stores.length === 0) {
+                container.innerHTML = `<div class="col-span-2 text-center py-8 text-slate-400 bg-white rounded-2xl">目前尚無分店資料</div>`;
                 return;
             }
 
-            db.stores.forEach(store => {
-                const storeCustomers = (db.customers && db.customers[store.code]) ? db.customers[store.code] : {};
-                const customerData = storeCustomers[phone] || { points: 0, updated: '尚無交易紀錄' };
-                const rule = (db.rules && db.rules[store.code]) ? db.rules[store.code] : { earnRate: 100, redeemRate: 1 };
+            window.globalDb.stores.forEach(store => {
+                const storeCustomers = (window.globalDb.customers && window.globalDb.customers[store.code]) ? window.globalDb.customers[store.code] : {};
+                const customerData = storeCustomers[phone] || { points: 0, updated: '尚無紀錄' };
+                const rule = (window.globalDb.rules && window.globalDb.rules[store.code]) ? window.globalDb.rules[store.code] : { earnRate: 100, redeemRate: 1 };
 
                 container.innerHTML += `
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 hover:shadow-md transition flex flex-col justify-between space-y-4">
@@ -158,7 +155,7 @@
                                 <h5 class="font-bold text-lg text-slate-900">${store.name}</h5>
                                 <span class="text-xs text-slate-400">統一編號：${store.taxId}</span>
                             </div>
-                            <span class="bg-emerald-50 text-emerald-700 text-xs px-2.5 py-1 rounded-full font-medium border border-emerald-100">營運中</span>
+                            <span class="bg-emerald-50 text-emerald-700 text-xs px-2.5 py-1 rounded-full font-medium">營運中</span>
                         </div>
 
                         <div class="bg-slate-50 p-4 rounded-xl flex justify-between items-center border border-slate-100">
@@ -173,7 +170,7 @@
                         </div>
 
                         <div class="text-xs text-indigo-700 bg-indigo-50/70 border border-indigo-100/60 p-3 rounded-xl flex items-center justify-between">
-                            <span>💡 店家集點規則</span>
+                            <span>💡 集點規則</span>
                             <span class="font-semibold">滿 ${rule.earnRate} 元集 1 點 ｜ 1 點折 ${rule.redeemRate} 元</span>
                         </div>
                     </div>
@@ -181,12 +178,12 @@
             });
         }
 
-        function resetQuery() {
-            currentSearchedPhone = null;
+        window.resetQuery = function() {
+            window.currentSearchedPhone = null;
             document.getElementById('login-card').classList.remove('hidden');
             document.getElementById('customer-query-result').classList.add('hidden');
             document.getElementById('query-phone-input').value = '';
-        }
+        };
     </script>
 </body>
 </html>
