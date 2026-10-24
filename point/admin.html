@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>商家管理與工作台 - 專業營運系統</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -55,7 +54,7 @@
                 </div>
 
                 <div id="store-code-wrapper" class="hidden space-y-1.5">
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">店家代碼</label>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">店家代碼 (非統編)</label>
                     <input type="text" id="login-store-code" placeholder="請輸入分店代碼 (例: store01)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-slate-700 font-medium focus:ring-2 focus:ring-indigo-600 focus:bg-white focus:outline-none transition">
                 </div>
 
@@ -97,8 +96,8 @@
                             <input type="text" id="new-tax-id" placeholder="例: 12345678" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-600 focus:bg-white focus:outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-1">登入店家代碼</label>
-                            <input type="text" id="new-store-code" placeholder="例: store03" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-600 focus:bg-white focus:outline-none">
+                            <label class="block text-xs font-medium text-slate-500 mb-1">登入店家代碼 (例: store01)</label>
+                            <input type="text" id="new-store-code" placeholder="例: store01" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-600 focus:bg-white focus:outline-none">
                         </div>
                         <div class="flex items-end">
                             <button onclick="addStore()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl transition shadow-sm text-sm">
@@ -204,7 +203,7 @@
                 <div class="md:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 space-y-4">
                     <div class="flex justify-between items-center">
                         <h3 class="text-lg font-bold text-slate-900">👥 本店會員名冊 (點擊即可調出紀錄)</h3>
-                        <span class="text-xs text-slate-400">支援大量會員快速檢索</span>
+                        <span class="text-xs text-slate-400">即時連線同步</span>
                     </div>
                     <div class="overflow-x-auto max-h-[400px] overflow-y-auto">
                         <table class="w-full text-left border-collapse">
@@ -225,36 +224,39 @@
 
     </main>
 
-    <!-- 頁尾 -->
     <footer class="text-center py-6 text-xs text-slate-400 border-t border-slate-200 mt-auto">
         &copy; 2026 多店營運與點數管理系統. All Rights Reserved.
     </footer>
 
-    <!-- 邏輯腳本 -->
+    <!-- 邏輯腳本 (完全空白初始化) -->
     <script>
-        let db = JSON.parse(localStorage.getItem('pos_db'));
-
-        if (!db || !db.stores || db.stores.length === 0) {
-            db = {
-                stores: [
-                    { name: "台北旗艦店", taxId: "12345678", code: "store01" },
-                    { name: "台中逢甲店", taxId: "87654321", code: "store02" }
-                ],
-                rules: {
-                    "store01": { earnRate: 100, redeemRate: 1 },
-                    "store02": { earnRate: 50, redeemRate: 2 }
-                },
-                customers: {
-                    "store01": { "0912345678": { name: "王小明", points: 50, updated: "2026-10-24" } },
-                    "store02": { "0912345678": { name: "王小明", points: 120, updated: "2026-10-24" } }
-                }
-            };
-            localStorage.setItem('pos_db', JSON.stringify(db));
+        function getDb() {
+            let db = JSON.parse(localStorage.getItem('pos_db'));
+            if (!db) {
+                db = {
+                    stores: [],
+                    rules: {},
+                    customers: {}
+                };
+                localStorage.setItem('pos_db', JSON.stringify(db));
+            }
+            return db;
         }
+
+        let db = getDb();
 
         function saveDb() {
             localStorage.setItem('pos_db', JSON.stringify(db));
         }
+
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'pos_db') {
+                db = getDb();
+                if (currentStoreCode) {
+                    renderCustomerList();
+                }
+            }
+        });
 
         let currentStoreCode = null;
 
@@ -268,6 +270,7 @@
         function handleBusinessLogin() {
             const role = document.getElementById('login-role').value;
             const statusBadge = document.getElementById('header-status-badge');
+            db = getDb();
             
             if (role === 'admin') {
                 document.getElementById('view-login').classList.add('hidden');
@@ -328,9 +331,10 @@
             const taxId = document.getElementById('new-tax-id').value.trim();
             const code = document.getElementById('new-store-code').value.trim();
             if (!name || !taxId || !code) { alert('請完整填寫所有分店欄位！'); return; }
+            db = getDb();
             db.stores.push({ name, taxId, code });
-            db.customers[code] = {};
-            db.rules[code] = { earnRate: 100, redeemRate: 1 };
+            if (!db.customers[code]) db.customers[code] = {};
+            if (!db.rules[code]) db.rules[code] = { earnRate: 100, redeemRate: 1 };
             saveDb();
             document.getElementById('new-company-name').value = '';
             document.getElementById('new-tax-id').value = '';
@@ -340,8 +344,13 @@
         }
 
         function renderStoreList() {
+            db = getDb();
             const tbody = document.getElementById('store-list-table');
             tbody.innerHTML = '';
+            if (db.stores.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-slate-400 text-sm">目前尚無任何分店，請上方新增</td></tr>`;
+                return;
+            }
             db.stores.forEach((store, index) => {
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50/80 transition">
@@ -356,6 +365,7 @@
 
         function deleteStore(index) {
             if (confirm('確定要刪除此分店與其相關資料嗎？')) {
+                db = getDb();
                 const code = db.stores[index].code;
                 db.stores.splice(index, 1);
                 delete db.customers[code];
@@ -366,8 +376,13 @@
         }
 
         function renderRuleStoreSelect() {
+            db = getDb();
             const select = document.getElementById('rule-target-store');
             select.innerHTML = '';
+            if (db.stores.length === 0) {
+                select.innerHTML = `<option value="">-- 尚無分店可設定 --</option>`;
+                return;
+            }
             db.stores.forEach(store => {
                 select.innerHTML += `<option value="${store.code}">${store.name} (${store.code})</option>`;
             });
@@ -375,14 +390,19 @@
         }
 
         function loadStoreRulesToForm() {
+            db = getDb();
             const storeCode = document.getElementById('rule-target-store').value;
-            const r = db.rules[storeCode] || { earnRate: 100, redeemRate: 1 };
+            if (!storeCode) return;
+            const r = (db.rules && db.rules[storeCode]) ? db.rules[storeCode] : { earnRate: 100, redeemRate: 1 };
             document.getElementById('rule-earn-rate').value = r.earnRate;
             document.getElementById('rule-redeem-rate').value = r.redeemRate;
         }
 
         function saveStoreRules() {
+            db = getDb();
             const storeCode = document.getElementById('rule-target-store').value;
+            if (!storeCode) { alert('請先選擇目標店家！'); return; }
+            if (!db.rules) db.rules = {};
             db.rules[storeCode] = {
                 earnRate: parseInt(document.getElementById('rule-earn-rate').value) || 100,
                 redeemRate: parseInt(document.getElementById('rule-redeem-rate').value) || 1
@@ -392,12 +412,13 @@
         }
 
         function renderCustomerList() {
+            db = getDb();
             const tbody = document.getElementById('customer-list-table');
             const selectEl = document.getElementById('member-select');
             tbody.innerHTML = '';
             selectEl.innerHTML = `<option value="">-- 請選擇現有會員或手動輸入 --</option>`;
 
-            const storeCustomers = db.customers[currentStoreCode] || {};
+            const storeCustomers = (db.customers && db.customers[currentStoreCode]) ? db.customers[currentStoreCode] : {};
             const keys = Object.keys(storeCustomers);
 
             if (keys.length === 0) {
@@ -432,7 +453,8 @@
                 document.getElementById('customer-name').value = '';
                 return;
             }
-            const storeCustomers = db.customers[currentStoreCode] || {};
+            db = getDb();
+            const storeCustomers = (db.customers && db.customers[currentStoreCode]) ? db.customers[currentStoreCode] : {};
             if (storeCustomers[phone]) {
                 document.getElementById('customer-phone').value = phone;
                 document.getElementById('customer-name').value = storeCustomers[phone].name;
@@ -449,6 +471,8 @@
                 return; 
             }
 
+            db = getDb();
+            if (!db.customers) db.customers = {};
             if (!db.customers[currentStoreCode]) db.customers[currentStoreCode] = {};
             
             if (!db.customers[currentStoreCode][phone]) {
@@ -477,7 +501,8 @@
             }
 
             if (confirm(`確定要刪除會員 (${phone}) 的所有紀錄嗎？`)) {
-                if (db.customers[currentStoreCode] && db.customers[currentStoreCode][phone]) {
+                db = getDb();
+                if (db.customers && db.customers[currentStoreCode] && db.customers[currentStoreCode][phone]) {
                     delete db.customers[currentStoreCode][phone];
                     saveDb();
                     document.getElementById('customer-phone').value = '';
