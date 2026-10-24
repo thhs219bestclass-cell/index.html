@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>監管端 - 商家管理與工作台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50: '#eef2ff', 100: '#e0e7ff', 600: '#4f46e5', 700: '#4338ca' }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
+
+    <!-- 頂部質感導覽列 -->
+    <header class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <span class="text-2xl">🏢</span>
+                <h1 class="text-lg font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent tracking-tight">多店營運與監管後台</h1>
+            </div>
+            <div class="flex items-center space-x-3">
+                <span id="header-status-badge" class="hidden text-xs bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full font-medium border border-indigo-100">未登入</span>
+                <!-- 指向同層上層再進客戶端資料夾的路徑 -->
+                <a href="../客戶端/customer.html" target="_blank" class="text-xs font-medium text-slate-500 hover:text-indigo-600 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full transition">開啟客戶端查詢 ↗</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要內容區 -->
+    <main class="max-w-6xl mx-auto px-6 py-10 flex-grow w-full space-y-8">
+
+        <!-- 1. 專業登入畫面 -->
+        <section id="view-login" class="max-w-md mx-auto bg-white p-8 sm:p-10 rounded-2xl shadow-sm border border-slate-200/80 space-y-6">
+            <div class="text-center space-y-2">
+                <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto text-xl font-bold shadow-inner mb-4">🔐</div>
+                <h2 class="text-2xl font-bold text-slate-900 tracking-tight">監管端系統登入</h2>
+                <p class="text-sm text-slate-500">請選擇您的管理權限與身分進行驗證</p>
+            </div>
+
+            <div class="space-y-4 pt-2">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">登入身分</label>
+                    <select id="login-role" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-slate-700 font-medium focus:ring-2 focus:ring-indigo-600 focus:bg-white focus:outline-none transition" onchange="toggleStoreInput()">
+                        <option value="admin">系統管理員 (總公司免統編)</option>
+                        <option value="store">店家員工 (分店獨立代碼)</option>
+                    </select>
+                </div>
+
+                <div id="store-code-wrapper" class="hidden space-y-1.5">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">店家代碼 (非統編)</label>
+                    <input type="text" id="login-store-code" placeholder="請輸入分店代碼 (例: store01)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-slate-700 font-medium focus:ring-2 focus:ring-indigo-600 focus:bg-white focus:outline-none transition">
+                </div>
+
+                <button onclick="handleBusinessLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-semibold py-3.5 rounded-xl transition shadow-md shadow-indigo-200 mt-2">
+                    安全登入工作台
+                </button>
+            </div>
+        </section>
+
+        <!-- 2. 管理員儀表板 (Super Admin) -->
+        <section id="view-admin" class="hidden space-y-6">
+            <div class="bg-gradient-to-r from-slate-900 to-indigo-950 text-white p-6 rounded-2xl shadow-md flex justify-between items-center">
+                <div>
+                    <span class="text-xs uppercase tracking-widest text-indigo-400 font-semibold">Super Admin Portal</span>
+                    <h2 class="text-2xl font-bold tracking-tight">系統管理總控台</h2>
+                </div>
+                <button onclick="businessLogout()" class="text-xs bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl transition border border-white/10">
+                    安全登出
+                </button>
+            </div>
+
+            <!-- 分頁切換按鈕 -->
+            <div class="flex space-x-2 bg-white p-1.5 rounded-xl border border-slate-200/80 shadow-sm w-fit">
+                <button onclick="switchAdminTab('stores')" id="tab-stores-btn" class="px-5 py-2.5 font-medium text-sm rounded-lg bg-indigo-600 text-white shadow-sm transition">公司與分店管理</button>
+                <button onclick="switchAdminTab('rules')" id="tab-rules-btn" class="px-5 py-2.5 font-medium text-sm rounded-lg text-slate-600 hover:text-slate-900 transition">各店規則制定</button>
+            </div>
+
+            <!-- 分頁 1：公司與店家管理 -->
+            <div id="admin-tab-stores" class="space-y-6">
+                <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200/80 space-y-4">
+                    <h3 class="text-lg font-bold text-slate-900">➕ 新增公司與連鎖分店</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-1">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">分店/公司名稱</label>
+                            <input type="text" id="new-company-name" placeholder="例: 得勝咖哩" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-600 focus:bg-white focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">統一編號 (8碼)</label>
+                            <input type="text" id="new-tax-id" placeholder="例: 82306486" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-600 focus:bg-white focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">登入店家代碼 (例: store01)</label>
+                            <input type="text" id="new-store-code" placeholder="例: store01" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-600 focus:bg-white focus:outline-none">
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="addStore()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl transition shadow-sm text-sm">
+                                立即建立分店
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200/80 space-y-4">
+                    <h3 class="text-lg font-bold text-slate-900">📋 已註冊的公司與分店清單</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-slate-400 text-xs uppercase tracking-wider">
+                                    <th class="py-3 px-4">公司 / 店家名稱</th>
+                                    <th class="py-3 px-4">統一編號</th>
+                                    <th class="py-3 px-4">系統代碼</th>
+                                    <th class="py-3 px-4 text-right">管理操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="store-list-table" class="divide-y divide-slate-100 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分頁 2：各店規則制定 -->
+            <div id="admin-tab-rules" class="hidden bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200/80 space-y-6">
+                <h3 class="text-lg font-bold text-slate-900">⚙️ 制定各分店專屬集點與折抵規則</h3>
+                <div class="max-w-md">
+                    <label class="block text-xs font-medium text-slate-500 mb-1">選擇目標店家</label>
+                    <select id="rule-target-store" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-600 focus:bg-white focus:outline-none" onchange="loadStoreRulesToForm()"></select>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-2xl border border-slate-200/80">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1.5">消費金額折抵點數比例 (元/點)</label>
+                        <input type="number" id="rule-earn-rate" class="w-full bg-white border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1.5">點數折抵現金價值 (元/點)</label>
+                        <input type="number" id="rule-redeem-rate" class="w-full bg-white border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+                    </div>
+                </div>
+                <button onclick="saveStoreRules()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-xl transition shadow-sm text-sm">
+                    儲存該分店專屬規則
+                </button>
+            </div>
+        </section>
+
+        <!-- 3. 店家專屬工作台 (Store Staff Portal) -->
+        <section id="view-store" class="hidden space-y-6">
+            <div class="bg-gradient-to-r from-indigo-900 to-indigo-800 text-white p-6 rounded-2xl shadow-md flex justify-between items-center">
+                <div>
+                    <span class="text-xs uppercase tracking-widest text-indigo-300 font-semibold">Store Portal</span>
+                    <h2 id="current-store-title" class="text-2xl font-bold tracking-tight">🏪 店家工作台</h2>
+                    <p id="current-store-tax" class="text-xs text-indigo-200 mt-1">統一編號：載入中...</p>
+                </div>
+                <button onclick="businessLogout()" class="text-xs bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl transition border border-white/10">
+                    安全登出
+                </button>
+            </div>
+
+            <!-- 核心功能區：先選擇人員，調出紀錄與增減點數 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- 左側：選擇會員與點數操作 -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 space-y-5">
+                    <h3 class="text-lg font-bold text-slate-900">👤 選擇會員與點數管理</h3>
+                    
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">從清單選擇現有會員</label>
+                        <select id="member-select" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-600 focus:bg-white focus:outline-none" onchange="onMemberSelected()">
+                            <option value="">-- 請選擇會員或下方手動輸入 --</option>
+                        </select>
+                    </div>
+
+                    <div class="border-t border-slate-100 pt-4 space-y-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">手機號碼 (系統主鍵)</label>
+                            <input type="text" id="customer-phone" placeholder="例: 0912345678" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-600 focus:bg-white focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">顧客姓名</label>
+                            <input type="text" id="customer-name" placeholder="例: 王小明" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-600 focus:bg-white focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">調整點數 (+增加 / -減少)</label>
+                            <input type="number" id="point-change" placeholder="例: 10 或 -5" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-600 focus:bg-white focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2 pt-2">
+                        <button onclick="updatePoints()" class="flex-grow bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl transition shadow-sm text-sm">
+                            儲存 / 更新點數
+                        </button>
+                        <button onclick="deleteSelectedCustomer()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 px-4 py-3 rounded-xl transition text-sm font-medium border border-rose-200">
+                            刪除會員
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 右側：本店會員名冊與快速選取 -->
+                <div class="md:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-slate-900">👥 本店會員名冊 (點擊即可調出紀錄)</h3>
+                        <span class="text-xs text-slate-400">即時連線同步</span>
+                    </div>
+                    <div class="overflow-x-auto max-h-[400px] overflow-y-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="sticky top-0 bg-white shadow-sm">
+                                <tr class="border-b border-slate-200 text-slate-400 text-xs uppercase tracking-wider">
+                                    <th class="py-3 px-4">顧客姓名</th>
+                                    <th class="py-3 px-4">手機號碼</th>
+                                    <th class="py-3 px-4">持有點數</th>
+                                    <th class="py-3 px-4 text-right">最後異動</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customer-list-table" class="divide-y divide-slate-100 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center py-6 text-xs text-slate-400 border-t border-slate-200 mt-auto">
+        &copy; 2026 多店營運與監管系統. All Rights Reserved.
+    </footer>
+
+    <!-- 邏輯腳本 -->
+    <script>
+        function getDb() {
+            let db = JSON.parse(localStorage.getItem('pos_db'));
+            if (!db) {
+                db = {
+                    stores: [],
+                    rules: {},
+                    customers: {}
+                };
+                localStorage.setItem('pos_db', JSON.stringify(db));
+            }
+            return db;
+        }
+
+        let db = getDb();
+
+        function saveDb() {
+            localStorage.setItem('pos_db', JSON.stringify(db));
+        }
+
+        let currentStoreCode = null;
+
+        function toggleStoreInput() {
+            const role = document.getElementById('login-role').value;
+            const wrapper = document.getElementById('store-code-wrapper');
+            if (role === 'store') wrapper.classList.remove('hidden');
+            else wrapper.classList.add('hidden');
+        }
+
+        function handleBusinessLogin() {
+            const role = document.getElementById('login-role').value;
+            const statusBadge = document.getElementById('header-status-badge');
+            db = getDb();
+            
+            if (role === 'admin') {
+                document.getElementById('view-login').classList.add('hidden');
+                document.getElementById('view-admin').classList.remove('hidden');
+                statusBadge.innerText = '身分：系統管理員';
+                statusBadge.classList.remove('hidden');
+                renderStoreList();
+                renderRuleStoreSelect();
+            } else {
+                const code = document.getElementById('login-store-code').value.trim();
+                const store = db.stores.find(s => s.code === code);
+                if (store) {
+                    currentStoreCode = code;
+                    document.getElementById('view-login').classList.add('hidden');
+                    document.getElementById('view-store').classList.remove('hidden');
+                    document.getElementById('current-store-title').innerText = `🏪 ${store.name} 工作台`;
+                    document.getElementById('current-store-tax').innerText = `統一編號：${store.taxId} | 店家代碼：${store.code}`;
+                    statusBadge.innerText = `登入分店：${store.name}`;
+                    statusBadge.classList.remove('hidden');
+                    renderCustomerList();
+                } else {
+                    alert('找不到對應的店家代碼，請重新確認！');
+                }
+            }
+        }
+
+        function businessLogout() {
+            currentStoreCode = null;
+            document.getElementById('view-login').classList.remove('hidden');
+            document.getElementById('view-admin').classList.add('hidden');
+            document.getElementById('view-store').classList.add('hidden');
+            document.getElementById('header-status-badge').classList.add('hidden');
+            document.getElementById('login-store-code').value = '';
+        }
+
+        function switchAdminTab(tab) {
+            const btnStores = document.getElementById('tab-stores-btn');
+            const btnRules = document.getElementById('tab-rules-btn');
+            const tabStores = document.getElementById('admin-tab-stores');
+            const tabRules = document.getElementById('admin-tab-rules');
+
+            if (tab === 'stores') {
+                tabStores.classList.remove('hidden');
+                tabRules.classList.add('hidden');
+                btnStores.className = 'px-5 py-2.5 font-medium text-sm rounded-lg bg-indigo-600 text-white shadow-sm transition';
+                btnRules.className = 'px-5 py-2.5 font-medium text-sm rounded-lg text-slate-600 hover:text-slate-900 transition';
+            } else {
+                tabStores.classList.add('hidden');
+                tabRules.classList.remove('hidden');
+                btnRules.className = 'px-5 py-2.5 font-medium text-sm rounded-lg bg-indigo-600 text-white shadow-sm transition';
+                btnStores.className = 'px-5 py-2.5 font-medium text-sm rounded-lg text-slate-600 hover:text-slate-900 transition';
+                renderRuleStoreSelect();
+            }
+        }
+
+        function addStore() {
+            const name = document.getElementById('new-company-name').value.trim();
+            const taxId = document.getElementById('new-tax-id').value.trim();
+            const code = document.getElementById('new-store-code').value.trim();
+            if (!name || !taxId || !code) { alert('請完整填寫所有分店欄位！'); return; }
+            db = getDb();
+            db.stores.push({ name, taxId, code });
+            if (!db.customers[code]) db.customers[code] = {};
+            if (!db.rules[code]) db.rules[code] = { earnRate: 100, redeemRate: 1 };
+            saveDb();
+            document.getElementById('new-company-name').value = '';
+            document.getElementById('new-tax-id').value = '';
+            document.getElementById('new-store-code').value = '';
+            renderStoreList();
+            alert('分店新增成功！');
+        }
+
+        function renderStoreList() {
+            db = getDb();
+            const tbody = document.getElementById('store-list-table');
+            tbody.innerHTML = '';
+            if (db.stores.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-slate-400 text-sm">目前尚無任何分店，請上方新增</td></tr>`;
+                return;
+            }
+            db.stores.forEach((store, index) => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50/80 transition">
+                        <td class="py-3 px-4 font-semibold text-slate-900">${store.name}</td>
+                        <td class="py-3 px-4 text-slate-600">${store.taxId}</td>
+                        <td class="py-3 px-4"><span class="bg-indigo-50 text-indigo-700 font-mono text-xs px-2.5 py-1 rounded-md border border-indigo-100">${store.code}</span></td>
+                        <td class="py-3 px-4 text-right"><button onclick="deleteStore(${index})" class="text-rose-600 hover:text-rose-700 font-medium text-xs bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg transition">刪除</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function deleteStore(index) {
+            if (confirm('確定要刪除此分店與其相關資料嗎？')) {
+                db = getDb();
+                const code = db.stores[index].code;
+                db.stores.splice(index, 1);
+                delete db.customers[code];
+                delete db.rules[code];
+                saveDb();
+                renderStoreList();
+            }
+        }
+
+        function renderRuleStoreSelect() {
+            db = getDb();
+            const select = document.getElementById('rule-target-store');
+            select.innerHTML = '';
+            if (db.stores.length === 0) {
+                select.innerHTML = `<option value="">-- 尚無分店可設定 --</option>`;
+                return;
+            }
+            db.stores.forEach(store => {
+                select.innerHTML += `<option value="${store.code}">${store.name} (${store.code})</option>`;
+            });
+            loadStoreRulesToForm();
+        }
+
+        function loadStoreRulesToForm() {
+            db = getDb();
+            const storeCode = document.getElementById('rule-target-store').value;
+            if (!storeCode) return;
+            const r = (db.rules && db.rules[storeCode]) ? db.rules[storeCode] : { earnRate: 100, redeemRate: 1 };
+            document.getElementById('rule-earn-rate').value = r.earnRate;
+            document.getElementById('rule-redeem-rate').value = r.redeemRate;
+        }
+
+        function saveStoreRules() {
+            db = getDb();
+            const storeCode = document.getElementById('rule-target-store').value;
+            if (!storeCode) { alert('請先選擇目標店家！'); return; }
+            if (!db.rules) db.rules = {};
+            db.rules[storeCode] = {
+                earnRate: parseInt(document.getElementById('rule-earn-rate').value) || 100,
+                redeemRate: parseInt(document.getElementById('rule-redeem-rate').value) || 1
+            };
+            saveDb();
+            alert('該分店專屬規則已成功更新！');
+        }
+
+        function renderCustomerList() {
+            db = getDb();
+            const tbody = document.getElementById('customer-list-table');
+            const selectEl = document.getElementById('member-select');
+            tbody.innerHTML = '';
+            selectEl.innerHTML = `<option value="">-- 請選擇現有會員或手動輸入 --</option>`;
+
+            const storeCustomers = (db.customers && db.customers[currentStoreCode]) ? db.customers[currentStoreCode] : {};
+            const keys = Object.keys(storeCustomers);
+
+            if (keys.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-slate-400 text-sm">目前尚無會員紀錄</td></tr>`;
+                return;
+            }
+
+            keys.forEach(phone => {
+                const c = storeCustomers[phone];
+                tbody.innerHTML += `
+                    <tr class="hover:bg-indigo-50/50 transition cursor-pointer" onclick="selectMember('${phone}', '${c.name}')">
+                        <td class="py-3 px-4 font-semibold text-slate-900">${c.name}</td>
+                        <td class="py-3 px-4 text-slate-600 font-mono text-xs">${phone}</td>
+                        <td class="py-3 px-4 font-extrabold text-emerald-600">${c.points} <span class="text-xs font-normal text-slate-500">點</span></td>
+                        <td class="py-3 px-4 text-right text-slate-400 text-xs">${c.updated}</td>
+                    </tr>
+                `;
+                selectEl.innerHTML += `<option value="${phone}">${c.name} (${phone}) - ${c.points}點</option>`;
+            });
+        }
+
+        function selectMember(phone, name) {
+            document.getElementById('customer-phone').value = phone;
+            document.getElementById('customer-name').value = name;
+            document.getElementById('member-select').value = phone;
+        }
+
+        function onMemberSelected() {
+            const phone = document.getElementById('member-select').value;
+            if (!phone) {
+                document.getElementById('customer-phone').value = '';
+                document.getElementById('customer-name').value = '';
+                return;
+            }
+            db = getDb();
+            const storeCustomers = (db.customers && db.customers[currentStoreCode]) ? db.customers[currentStoreCode] : {};
+            if (storeCustomers[phone]) {
+                document.getElementById('customer-phone').value = phone;
+                document.getElementById('customer-name').value = storeCustomers[phone].name;
+            }
+        }
+
+        function updatePoints() {
+            const phone = document.getElementById('customer-phone').value.trim();
+            const name = document.getElementById('customer-name').value.trim();
+            const change = parseInt(document.getElementById('point-change').value) || 0;
+
+            if (!phone || !name) { 
+                alert('請完整輸入顧客的手機號碼與姓名！'); 
+                return; 
+            }
+
+            db = getDb();
+            if (!db.customers) db.customers = {};
+            if (!db.customers[currentStoreCode]) db.customers[currentStoreCode] = {};
+            
+            if (!db.customers[currentStoreCode][phone]) {
+                db.customers[currentStoreCode][phone] = { name: name, points: 0, updated: new Date().toLocaleDateString() };
+            } else {
+                db.customers[currentStoreCode][phone].name = name;
+            }
+
+            db.customers[currentStoreCode][phone].points += change;
+            if (db.customers[currentStoreCode][phone].points < 0) {
+                db.customers[currentStoreCode][phone].points = 0;
+            }
+            db.customers[currentStoreCode][phone].updated = new Date().toLocaleDateString();
+
+            saveDb();
+            document.getElementById('point-change').value = '';
+            renderCustomerList();
+            alert('會員點數與紀錄更新成功！');
+        }
+
+        function deleteSelectedCustomer() {
+            const phone = document.getElementById('customer-phone').value.trim();
+            if (!phone) {
+                alert('請先選擇或輸入要刪除的手機號碼！');
+                return;
+            }
+
+            if (confirm(`確定要刪除會員 (${phone}) 的所有紀錄嗎？`)) {
+                db = getDb();
+                if (db.customers && db.customers[currentStoreCode] && db.customers[currentStoreCode][phone]) {
+                    delete db.customers[currentStoreCode][phone];
+                    saveDb();
+                    document.getElementById('customer-phone').value = '';
+                    document.getElementById('customer-name').value = '';
+                    document.getElementById('point-change').value = '';
+                    renderCustomerList();
+                    alert('會員已成功刪除！');
+                } else {
+                    alert('找不到此會員紀錄！');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
