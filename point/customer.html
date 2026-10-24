@@ -98,23 +98,26 @@
                 return;
             }
 
-            // 讀取共用的 localStorage 資料庫
-            let db = JSON.parse(localStorage.getItem('pos_db')) || {
-                stores: [
-                    { name: "台北旗艦店", taxId: "12345678", code: "store01" },
-                    { name: "台中逢甲店", taxId: "87654321", code: "store02" }
-                ],
-                rules: {
-                    "store01": { earnRate: 100, redeemRate: 1 },
-                    "store02": { earnRate: 50, redeemRate: 2 }
-                },
-                customers: {
-                    "store01": { "0912345678": { name: "王小明", points: 50, updated: "2026-10-24" } },
-                    "store02": { "0912345678": { name: "王小明", points: 120, updated: "2026-10-24" } }
-                }
-            };
+            let db = JSON.parse(localStorage.getItem('pos_db'));
 
-            // 自動搜尋任一分店內紀錄的顧客姓名
+            if (!db || !db.stores || db.stores.length === 0) {
+                db = {
+                    stores: [
+                        { name: "台北旗艦店", taxId: "12345678", code: "store01" },
+                        { name: "台中逢甲店", taxId: "87654321", code: "store02" }
+                    ],
+                    rules: {
+                        "store01": { earnRate: 100, redeemRate: 1 },
+                        "store02": { earnRate: 50, redeemRate: 2 }
+                    },
+                    customers: {
+                        "store01": { "0912345678": { name: "王小明", points: 50, updated: "2026-10-24" } },
+                        "store02": { "0912345678": { name: "王小明", points: 120, updated: "2026-10-24" } }
+                    }
+                };
+                localStorage.setItem('pos_db', JSON.stringify(db));
+            }
+
             let customerName = null;
             for (let storeCode in db.customers) {
                 if (db.customers[storeCode][phone] && db.customers[storeCode][phone].name) {
@@ -123,7 +126,6 @@
                 }
             }
 
-            // 如果找不到名字，則用預設稱謂；若有找到則顯示「xxx先生/小姐」
             if (customerName) {
                 document.getElementById('welcome-message').innerText = `歡迎回來，${customerName} 先生 / 小姐`;
             } else {
@@ -132,7 +134,6 @@
             
             document.getElementById('display-phone-sub').innerText = `已驗證手機：${phone}`;
 
-            // 切換畫面
             loginCard.classList.add('hidden');
             resultBox.classList.remove('hidden');
             container.innerHTML = '';
