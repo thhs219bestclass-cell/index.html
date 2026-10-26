@@ -3,187 +3,212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>客戶端 - 雲端即時會員查詢</title>
+    <title>尊榮會員禮遇中心 - 頂級餐飲集團</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Supabase JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        brand: { 50: '#eef2ff', 100: '#e0e7ff', 600: '#4f46e5', 700: '#4338ca' }
+                        luxury: {
+                            900: '#0f1115',
+                            800: '#181b22',
+                            700: '#262a33',
+                            gold: '#d4af37',
+                            goldLight: '#f3e5ab',
+                            goldDark: '#aa8c2c'
+                        }
                     }
                 }
             }
         }
     </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap');
+        body { font-family: 'Plus Jakarta Sans', 'Noto Serif TC', serif; }
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #f3e5ab 0%, #d4af37 50%, #aa8c2c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .gold-border {
+            border-image: linear-gradient(to right, #aa8c2c, #f3e5ab, #aa8c2c) 1;
+        }
+    </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
+<body class="bg-luxury-900 text-slate-200 font-sans min-h-screen flex flex-col antialiased selection:bg-luxury-gold selection:text-luxury-900">
 
-    <header class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <span class="text-2xl">💎</span>
-                <h1 class="text-lg font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent tracking-tight">會員專屬雲端服務中心</h1>
+    <!-- 頂部奢華導覽列 -->
+    <header class="bg-luxury-900/90 backdrop-blur-md border-b border-luxury-700/60 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-6 py-5 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <span class="text-2xl">⚜️</span>
+                <h1 class="text-lg font-bold tracking-widest gold-gradient-text uppercase">MEMBER CLUB</h1>
             </div>
-            <a href="../監管者/admin.html" class="text-xs font-medium text-slate-500 hover:text-indigo-600 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full transition">監管端登入 ↗</a>
+            <a href="../監管者/admin.html" class="text-xs tracking-wider text-luxury-goldLight/70 hover:text-luxury-gold bg-luxury-800 hover:bg-luxury-700 px-4 py-2 rounded-full border border-luxury-gold/30 transition shadow-sm">
+                員工/管理後台 ↗
+            </a>
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto px-6 py-10 flex-grow w-full space-y-8">
+    <!-- 主要內容區 -->
+    <main class="max-w-4xl mx-auto px-6 py-14 flex-grow w-full space-y-10">
         
-        <section id="login-card" class="bg-white p-8 sm:p-10 rounded-2xl shadow-sm border border-slate-200/80 space-y-6 text-center max-w-xl mx-auto transition-all">
-            <div class="space-y-2">
-                <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto text-xl font-bold shadow-inner mb-4">☁️</div>
-                <h2 class="text-2xl font-bold text-slate-900 tracking-tight">即時查詢會員點數</h2>
-                <p class="text-sm text-slate-500">輸入手機號碼，同步抓取雲端各分店點數與規則。</p>
+        <!-- 登入與查詢區塊 (高級卡片風) -->
+        <section id="login-card" class="bg-luxury-800/80 backdrop-blur-xl p-10 sm:p-12 rounded-3xl shadow-2xl border border-luxury-gold/20 space-y-8 text-center max-w-xl mx-auto transition-all">
+            <div class="space-y-3">
+                <span class="text-3xl">🍸</span>
+                <h2 class="text-3xl font-serif font-bold text-white tracking-wide">尊榮禮遇查詢</h2>
+                <p class="text-sm text-slate-400 font-light">請輸入您的貴賓手機號碼，開啟您的專屬會籍權益。</p>
             </div>
             
-            <div class="space-y-4 pt-2">
-                <input type="text" id="query-phone-input" placeholder="請輸入手機號碼 (例: 0912345678)" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3.5 text-center text-lg tracking-wider font-medium focus:ring-2 focus:ring-indigo-600 focus:bg-white focus:outline-none transition">
-                <button onclick="queryCustomerPoints()" class="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-semibold py-3.5 rounded-xl transition shadow-md shadow-indigo-200">
-                    立即查詢點數
+            <div class="space-y-5 pt-2">
+                <div class="relative">
+                    <input type="text" id="query-phone-input" placeholder="請輸入手機號碼 (例: 0912345678)" class="w-full bg-luxury-900/90 border border-luxury-700 rounded-2xl px-5 py-4 text-center text-xl tracking-widest text-luxury-goldLight font-medium focus:ring-2 focus:ring-luxury-gold focus:border-transparent focus:outline-none transition placeholder:text-slate-600">
+                </div>
+                <button onclick="queryCustomerPoints()" class="w-full bg-gradient-to-r from-luxury-goldDark via-luxury-gold to-luxury-goldLight hover:opacity-90 active:scale-[0.99] text-luxury-900 font-bold py-4 rounded-2xl transition shadow-lg shadow-luxury-gold/10 tracking-widest uppercase text-sm">
+                    立即驗證查詢
                 </button>
             </div>
         </section>
 
-        <div id="customer-query-result" class="space-y-6 hidden">
-            <div class="bg-gradient-to-r from-indigo-900 to-indigo-800 text-white p-6 sm:p-8 rounded-2xl shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div class="space-y-1">
-                    <span class="text-xs uppercase tracking-widest text-indigo-300 font-semibold">Cloud Member Portal</span>
-                    <h3 id="welcome-message" class="text-2xl font-bold tracking-tight">您好，貴賓</h3>
-                    <p id="display-phone-sub" class="text-xs text-indigo-200">已驗證手機</p>
+        <!-- 查詢成功後的頂級會籍與點數列表 -->
+        <div id="customer-query-result" class="space-y-8 hidden">
+            
+            <!-- 會員尊榮大卡 -->
+            <div class="bg-gradient-to-br from-luxury-800 via-luxury-700 to-luxury-900 text-white p-8 sm:p-10 rounded-3xl shadow-2xl border border-luxury-gold/40 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 text-9xl text-luxury-gold/5 select-none pointer-events-none font-serif">VIP</div>
+                <div class="space-y-2 relative z-10">
+                    <span class="text-xs uppercase tracking-[0.3em] text-luxury-gold font-semibold">Exquisite Membership</span>
+                    <h3 id="welcome-message" class="text-3xl font-serif font-bold tracking-tight text-white">尊貴的貴賓</h3>
+                    <p id="display-phone-sub" class="text-xs text-slate-400 tracking-wider">已驗證手機：--</p>
                 </div>
-                <button onclick="resetQuery()" class="text-xs bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl transition border border-white/10">切換號碼</button>
+                <button onclick="resetQuery()" class="relative z-10 text-xs bg-luxury-900/60 hover:bg-luxury-900 text-luxury-goldLight px-5 py-2.5 rounded-xl transition border border-luxury-gold/30 tracking-wider">
+                    切換號碼查詢
+                </button>
             </div>
 
-            <div class="flex justify-between items-center px-1">
-                <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wider">各分店點數資產與規則總覽</h4>
-                <span class="text-xs text-emerald-600 font-medium">● 雲端即時同步中</span>
+            <div class="flex justify-between items-center px-2 border-b border-luxury-700/50 pb-4">
+                <h4 class="text-xs font-bold text-luxury-gold uppercase tracking-[0.2em]">集團旗下分店資產與禮遇總覽</h4>
+                <span class="text-xs text-emerald-400 font-medium flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> 雲端即時連線同步
+                </span>
             </div>
 
-            <div id="customer-cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            <!-- 各店點數卡片容器 (餐廳風格) -->
+            <div id="customer-cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
         </div>
 
     </main>
 
-    <footer class="text-center py-6 text-xs text-slate-400 border-t border-slate-200 mt-auto">
-        &copy; 2026 多店雲端整合系統. All Rights Reserved.
+    <footer class="text-center py-8 text-xs text-slate-500 border-t border-luxury-700/40 mt-auto tracking-widest uppercase">
+        &copy; 2026 頂級餐飲集團會員中心. All Rights Reserved.
     </footer>
 
-    <!-- Firebase 邏輯腳本 (使用最新 Modular SDK) -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js";
+    <!-- Supabase 邏輯與高級餐廳 UI 渲染 -->
+    <script>
+        const SUPABASE_URL = 'https://lqhiolijrejahmzoulcs.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxaGlvbGlqcmVqYWhtem91bGNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI5NTQ3ODYsImV4cCI6MjEwODUzMDc4Nn0.qDpea3h33N8WLK1WtL8JQ10D3y1rfiicxFqTFyx9nBs';
+        
+        const { createClient } = supabase;
+        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCF7wR7POu3uCZZob_HQxl6dBP79n0YZFc",
-            authDomain: "pos-system-2e0c2.firebaseapp.com",
-            databaseURL: "https://pos-system-2e0c2-default-rtdb.firebaseio.com",
-            projectId: "pos-system-2e0c2",
-            storageBucket: "pos-system-2e0c2.firebasestorage.app",
-            messagingSenderId: "491150417656",
-            appId: "1:491150417656:web:e6f1c6cf3aab6f18cfe50d",
-            measurementId: "G-745N7CJZ68"
-        };
+        let currentSearchedPhone = null;
 
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-        const dbRef = ref(database);
-
-        window.globalDb = { stores: [], rules: {}, customers: {} };
-        window.currentSearchedPhone = null;
-
-        // 即時監聽雲端資料庫
-        onValue(dbRef, (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                window.globalDb = data;
-            } else {
-                window.globalDb = { stores: [], rules: {}, customers: {} };
-            }
-            if (window.currentSearchedPhone) {
-                renderResults(window.currentSearchedPhone);
-            }
-        });
-
-        window.queryCustomerPoints = function() {
+        async function queryCustomerPoints() {
             const phone = document.getElementById('query-phone-input').value.trim();
-            if (!phone) { alert('請輸入手機號碼！'); return; }
-            window.currentSearchedPhone = phone;
-            renderResults(phone);
-        };
+            if (!phone) {
+                alert('請輸入您的貴賓手機號碼');
+                return;
+            }
+            currentSearchedPhone = phone;
+            await renderResults(phone);
+        }
 
-        function renderResults(phone) {
+        async function renderResults(phone) {
             const loginCard = document.getElementById('login-card');
             const resultBox = document.getElementById('customer-query-result');
             const container = document.getElementById('customer-cards-container');
 
+            // 1. 同步讀取分店與該手機在各店的會員資料
+            const { data: stores } = await _supabase.from('stores').select('*');
+            const { data: customers } = await _supabase.from('customers').select('*').eq('phone', phone);
+            const { data: rules } = await _supabase.from('rules').select('*');
+
+            const storeList = stores || [];
+            const customerRecords = customers || [];
+            const ruleList = rules || [];
+
+            // 尋找顧客姓名與性別 (只要其中一間分店有填寫就採用)
             let customerName = null;
-            for (let storeCode in window.globalDb.customers) {
-                if (window.globalDb.customers[storeCode][phone] && window.globalDb.customers[storeCode][phone].name) {
-                    customerName = window.globalDb.customers[storeCode][phone].name;
+            let customerGender = '先生'; // 預設
+            for (let c of customerRecords) {
+                if (c.name) {
+                    customerName = c.name;
+                    if (c.gender) customerGender = c.gender; // 支援資料庫中的 gender 欄位 ('先生' 或 '女士')
                     break;
                 }
             }
 
             if (customerName) {
-                document.getElementById('welcome-message').innerText = `歡迎回來，${customerName} 先生 / 小姐`;
+                document.getElementById('welcome-message').innerText = `歡迎回來，${customerName} ${customerGender}`;
             } else {
-                document.getElementById('welcome-message').innerText = `歡迎回來，貴賓`;
+                document.getElementById('welcome-message').innerText = `歡迎貴賓蒞臨`;
             }
             
-            document.getElementById('display-phone-sub').innerText = `已驗證手機：${phone}`;
+            document.getElementById('display-phone-sub').innerText = `已驗證貴賓手機：${phone}`;
 
             loginCard.classList.add('hidden');
             resultBox.classList.remove('hidden');
             container.innerHTML = '';
 
-            if (!window.globalDb.stores || window.globalDb.stores.length === 0) {
-                container.innerHTML = `<div class="col-span-2 text-center py-8 text-slate-400 bg-white rounded-2xl">目前尚無分店資料</div>`;
+            if (storeList.length === 0) {
+                container.innerHTML = `<div class="col-span-2 text-center py-12 text-slate-500 bg-luxury-800 rounded-3xl border border-luxury-700">目前集團尚無分店資料</div>`;
                 return;
             }
 
-            window.globalDb.stores.forEach(store => {
-                const storeCustomers = (window.globalDb.customers && window.globalDb.customers[store.code]) ? window.globalDb.customers[store.code] : {};
-                const customerData = storeCustomers[phone] || { points: 0, updated: '尚無紀錄' };
-                const rule = (window.globalDb.rules && window.globalDb.rules[store.code]) ? window.globalDb.rules[store.code] : { earnRate: 100, redeemRate: 1 };
+            storeList.forEach(store => {
+                const cData = customerRecords.find(item => item.store_code === store.code) || { points: 0, updated: '尚無消費紀錄' };
+                const rData = ruleList.find(item => item.store_code === store.code) || { earn_rate: 100, redeem_rate: 1 };
 
                 container.innerHTML += `
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 hover:shadow-md transition flex flex-col justify-between space-y-4">
+                    <div class="bg-luxury-800/90 backdrop-blur-md p-8 rounded-3xl shadow-xl border border-luxury-700/80 hover:border-luxury-gold/50 transition duration-300 flex flex-col justify-between space-y-6 group">
                         <div class="flex justify-between items-start">
                             <div>
-                                <h5 class="font-bold text-lg text-slate-900">${store.name}</h5>
-                                <span class="text-xs text-slate-400">統一編號：${store.taxId}</span>
+                                <h5 class="font-serif font-bold text-xl text-white tracking-wide group-hover:text-luxury-goldLight transition">${store.name}</h5>
+                                <span class="text-xs text-slate-500 tracking-wider">統一編號：${store.tax_id}</span>
                             </div>
-                            <span class="bg-emerald-50 text-emerald-700 text-xs px-2.5 py-1 rounded-full font-medium">營運中</span>
+                            <span class="bg-luxury-gold/10 text-luxury-gold text-xs px-3 py-1 rounded-full font-medium border border-luxury-gold/30 tracking-widest uppercase">VIP 尊榮營運</span>
                         </div>
 
-                        <div class="bg-slate-50 p-4 rounded-xl flex justify-between items-center border border-slate-100">
+                        <div class="bg-luxury-900/80 p-5 rounded-2xl flex justify-between items-center border border-luxury-700/50">
                             <div>
-                                <span class="text-xs text-slate-500 font-medium block">可用點數餘額</span>
-                                <span class="text-3xl font-extrabold text-emerald-600 tracking-tight">${customerData.points} <span class="text-sm font-normal text-slate-600">點</span></span>
+                                <span class="text-xs text-slate-400 font-medium tracking-widest uppercase block mb-1">可用點數資產</span>
+                                <span class="text-3xl font-serif font-bold text-luxury-goldLight tracking-tight">${cData.points} <span class="text-sm font-normal text-slate-400">點</span></span>
                             </div>
                             <div class="text-right">
-                                <span class="text-[11px] text-slate-400 block">最後異動</span>
-                                <span class="text-xs text-slate-600 font-medium">${customerData.updated}</span>
+                                <span class="text-[11px] text-slate-500 block">最後饗宴異動</span>
+                                <span class="text-xs text-slate-300 font-medium">${cData.updated || '尚無紀錄'}</span>
                             </div>
                         </div>
 
-                        <div class="text-xs text-indigo-700 bg-indigo-50/70 border border-indigo-100/60 p-3 rounded-xl flex items-center justify-between">
-                            <span>💡 集點規則</span>
-                            <span class="font-semibold">滿 ${rule.earnRate} 元集 1 點 ｜ 1 點折 ${rule.redeemRate} 元</span>
+                        <div class="text-xs text-luxury-goldLight/90 bg-luxury-900/40 border border-luxury-gold/20 p-4 rounded-2xl flex items-center justify-between tracking-wide">
+                            <span class="text-slate-400">💎 禮遇回饋規則</span>
+                            <span class="font-semibold">消費滿 $${rData.earn_rate} 累積 1 點 ｜ 1 點折抵 $${rData.redeem_rate}</span>
                         </div>
                     </div>
                 `;
             });
         }
 
-        window.resetQuery = function() {
-            window.currentSearchedPhone = null;
+        function resetQuery() {
+            currentSearchedPhone = null;
             document.getElementById('login-card').classList.remove('hidden');
             document.getElementById('customer-query-result').classList.add('hidden');
             document.getElementById('query-phone-input').value = '';
-        };
+        }
     </script>
 </body>
 </html>
