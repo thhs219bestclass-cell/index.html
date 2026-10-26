@@ -158,10 +158,10 @@
                 </div>
             </div>
 
-            <!-- 分店各自管理的菜單專區 (含圖片網址欄位) -->
+            <!-- 分店各自管理的菜單專區 (支援圖片上傳) -->
             <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200/80 space-y-6">
-                <h3 class="text-lg font-bold text-slate-900">🍽️ 本店獨立菜單管理 (含圖片)</h3>
-                <p class="text-xs text-slate-500">在此新增菜品與圖片網址，將會即時同步展現於客戶端的前台菜單中。</p>
+                <h3 class="text-lg font-bold text-slate-900">🍽️ 本店獨立菜單管理 (支援上傳圖片)</h3>
+                <p class="text-xs text-slate-500">上傳菜品圖片檔案，系統將自動上傳至雲端並展示於前台菜單中。</p>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-slate-500 mb-1">菜品名稱</label>
@@ -172,15 +172,15 @@
                         <input type="number" id="branch-menu-price" placeholder="1680" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-1">圖片網址 (Image URL)</label>
-                        <input type="text" id="branch-menu-img" placeholder="https://... 圖片連結" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm">
+                        <label class="block text-xs font-medium text-slate-500 mb-1">選擇圖片檔案</label>
+                        <input type="file" id="branch-menu-file" accept="image/*" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2 text-xs file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-slate-500 mb-1">菜品描述</label>
                         <input type="text" id="branch-menu-desc" placeholder="口感描述..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm">
                     </div>
                 </div>
-                <button onclick="addBranchMenuItem()" class="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-6 py-3 rounded-xl text-sm">新增至本店菜單</button>
+                <button onclick="addBranchMenuItem()" class="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-6 py-3 rounded-xl text-sm">上傳圖片並新增菜品</button>
 
                 <div class="pt-4 border-t border-slate-100">
                     <h4 class="text-sm font-bold text-slate-800 mb-3">📋 本店現有菜單清單</h4>
@@ -364,24 +364,50 @@
             alert('分店集點與折抵規則儲存成功！');
         }
 
-        // 分店各自管理菜單 (含圖片網址)
+        // 分店菜單上傳圖片檔案並新增
         async function addBranchMenuItem() {
             const name = document.getElementById('branch-menu-name').value.trim();
             const price = parseInt(document.getElementById('branch-menu-price').value);
-            const image_url = document.getElementById('branch-menu-img').value.trim();
+            const fileInput = document.getElementById('branch-menu-file');
             const description = document.getElementById('branch-menu-desc').value.trim();
 
             if (!name || isNaN(price)) { alert('請填寫菜品名稱與價格！'); return; }
+
+            let image_url = '';
+
+            // 如果有選擇圖片檔案，上傳至 Supabase Storage
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${currentStoreCode}_${Date.now()}.${fileExt}`;
+                const filePath = `${fileName}`;
+
+                const { error: uploadError } = await _supabase.storage
+                    .from('menu-images')
+                    .upload(filePath, file);
+
+                if (uploadError) {
+                    alert('圖片上傳失敗: ' + uploadError.message);
+                    return;
+                }
+
+                // 取得公開下載網址
+                const { data: publicURLData } = _supabase.storage
+                    .from('menu-images')
+                    .getPublicUrl(filePath);
+
+                image_url = publicURLData.publicUrl;
+            }
 
             const { error } = await _supabase.from('menus').insert([{ store_code: currentStoreCode, name, price, image_url, description }]);
             if (error) { alert('新增菜品失敗: ' + error.message); return; }
 
             document.getElementById('branch-menu-name').value = '';
             document.getElementById('branch-menu-price').value = '';
-            document.getElementById('branch-menu-img').value = '';
+            document.getElementById('branch-menu-file').value = '';
             document.getElementById('branch-menu-desc').value = '';
             renderBranchMenuList();
-            alert('本店菜品新增成功！');
+            alert('本店菜品與圖片上傳成功！');
         }
 
         async function renderBranchMenuList() {
