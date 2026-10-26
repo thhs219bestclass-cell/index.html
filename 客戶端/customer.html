@@ -92,73 +92,45 @@
             <div id="customer-cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
         </div>
 
-        <!-- 完整菜單與套餐組合專區 -->
+        <!-- 菜單分類與品項展示區 -->
         <section class="space-y-8 pt-6 border-t border-luxury-700/50">
-            <div class="text-center space-y-2">
-                <span class="text-xs font-bold tracking-[0.3em] text-luxury-gold uppercase">Official Menu</span>
-                <h3 class="text-3xl font-serif font-bold text-white tracking-wide">超值餐 ｜ 咖哩類 ｜ 燒咖哩 ｜ 定食 ｜ 炸物小菜 ｜ 飲料</h3>
-                <p class="text-sm text-slate-400 font-light">點擊下方菜單圖片可放大檢視詳細內容與價格。</p>
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="text-center sm:text-left space-y-1">
+                    <span class="text-xs font-bold tracking-[0.3em] text-luxury-gold uppercase">Official Menu</span>
+                    <h3 class="text-2xl font-serif font-bold text-white tracking-wide">人氣精選餐點</h3>
+                </div>
+                <!-- 食物類型分類篩選按鈕 -->
+                <div class="flex flex-wrap gap-2 justify-center" id="category-filter-buttons">
+                    <button onclick="filterCategory('all')" class="cat-btn bg-luxury-gold text-luxury-900 font-bold px-4 py-2 rounded-xl text-xs transition">全部</button>
+                    <button onclick="filterCategory('超值餐')" class="cat-btn bg-luxury-800 text-slate-300 hover:text-luxury-gold px-4 py-2 rounded-xl text-xs transition border border-luxury-700">超值餐</button>
+                    <button onclick="filterCategory('咖哩類')" class="cat-btn bg-luxury-800 text-slate-300 hover:text-luxury-gold px-4 py-2 rounded-xl text-xs transition border border-luxury-700">咖哩類</button>
+                    <button onclick="filterCategory('燒咖哩')" class="cat-btn bg-luxury-800 text-slate-300 hover:text-luxury-gold px-4 py-2 rounded-xl text-xs transition border border-luxury-700">燒咖哩</button>
+                    <button onclick="filterCategory('定食')" class="cat-btn bg-luxury-800 text-slate-300 hover:text-luxury-gold px-4 py-2 rounded-xl text-xs transition border border-luxury-700">定食</button>
+                    <button onclick="filterCategory('炸物小菜')" class="cat-btn bg-luxury-800 text-slate-300 hover:text-luxury-gold px-4 py-2 rounded-xl text-xs transition border border-luxury-700">炸物小菜</button>
+                    <button onclick="filterCategory('飲料')" class="cat-btn bg-luxury-800 text-slate-300 hover:text-luxury-gold px-4 py-2 rounded-xl text-xs transition border border-luxury-700">飲料</button>
+                </div>
             </div>
 
-            <!-- 菜單圖片展示 -->
-            <div class="bg-luxury-800/60 border border-luxury-700/60 p-4 sm:p-6 rounded-3xl text-center shadow-2xl">
-                <a id="menu-image-link" href="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1200" target="_blank" class="block overflow-hidden rounded-2xl group">
-                    <img id="menu-board-image" src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1200" alt="精選菜單" class="w-full h-auto object-cover group-hover:scale-105 transition duration-500 shadow-lg">
-                </a>
-                <p class="text-xs text-slate-500 mt-3">💡 提示：管理員可隨時從後台設定更新此張菜單圖片</p>
+            <!-- 動態菜單卡片容器 -->
+            <div id="dynamic-menu-container" class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                <div class="col-span-full text-center py-10 text-slate-500">載入雲端菜單中...</div>
             </div>
 
             <!-- 套餐組合文字專區 -->
             <div class="bg-luxury-800/60 border border-luxury-700/60 p-6 sm:p-8 rounded-3xl space-y-4">
                 <h4 class="text-xs font-bold text-luxury-gold uppercase tracking-[0.2em] text-center mb-4">套餐組合內容 (Set Meal Options)</h4>
-                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="bg-luxury-900/60 p-4 rounded-2xl border border-luxury-700/60 flex items-center space-x-3">
                         <span class="text-amber-500 text-lg">✨</span>
-                        <div>
-                            <span class="text-xs text-amber-400 font-semibold block">A 套餐</span>
-                            <span class="text-sm text-white font-medium">南瓜可樂餅 1 片 + 可樂</span>
-                        </div>
+                        <div><span class="text-xs text-amber-400 font-semibold block">A 套餐</span><span class="text-sm text-white font-medium">南瓜可樂餅 1 片 + 可樂 / 葡萄烏龍氣泡飲</span></div>
                     </div>
-
-                    <div class="bg-luxury-900/60 p-4 rounded-2xl border border-luxury-700/60 flex items-center space-x-3">
-                        <span class="text-amber-500 text-lg">✨</span>
-                        <div>
-                            <span class="text-xs text-amber-400 font-semibold block">A 套餐</span>
-                            <span class="text-sm text-white font-medium">南瓜可樂餅 1 片 + 葡萄烏龍氣泡飲</span>
-                        </div>
-                    </div>
-
                     <div class="bg-luxury-900/60 p-4 rounded-2xl border border-luxury-700/60 flex items-center space-x-3">
                         <span class="text-amber-500 text-lg">🔥</span>
-                        <div>
-                            <span class="text-xs text-amber-400 font-semibold block">B 套餐</span>
-                            <span class="text-sm text-white font-medium">薯條 + 可樂</span>
-                        </div>
+                        <div><span class="text-xs text-amber-400 font-semibold block">B 套餐</span><span class="text-sm text-white font-medium">薯條 + 可樂 / 葡萄烏龍氣泡飲</span></div>
                     </div>
-
-                    <div class="bg-luxury-900/60 p-4 rounded-2xl border border-luxury-700/60 flex items-center space-x-3">
-                        <span class="text-amber-500 text-lg">🔥</span>
-                        <div>
-                            <span class="text-xs text-amber-400 font-semibold block">B 套餐</span>
-                            <span class="text-sm text-white font-medium">薯條 + 葡萄烏龍氣泡飲</span>
-                        </div>
-                    </div>
-
-                    <div class="bg-luxury-900/60 p-4 rounded-2xl border border-luxury-700/60 flex items-center space-x-3">
+                    <div class="bg-luxury-900/60 md:col-span-2 p-4 rounded-2xl border border-luxury-700/60 flex items-center space-x-3">
                         <span class="text-amber-500 text-lg">👑</span>
-                        <div>
-                            <span class="text-xs text-amber-400 font-semibold block">C 套餐</span>
-                            <span class="text-sm text-white font-medium">唐揚雞 2 塊 + 可樂</span>
-                        </div>
-                    </div>
-
-                    <div class="bg-luxury-900/60 p-4 rounded-2xl border border-luxury-700/60 flex items-center space-x-3">
-                        <span class="text-amber-500 text-lg">👑</span>
-                        <div>
-                            <span class="text-xs text-amber-400 font-semibold block">C 套餐</span>
-                            <span class="text-sm text-white font-medium">唐揚雞 2 塊 + 葡萄烏龍氣泡飲</span>
-                        </div>
+                        <div><span class="text-xs text-amber-400 font-semibold block">C 套餐</span><span class="text-sm text-white font-medium">唐揚雞 2 塊 + 可樂 / 葡萄烏龍氣泡飲</span></div>
                     </div>
                 </div>
             </div>
@@ -178,9 +150,10 @@
         const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentSearchedPhone = null;
+        let allMenuItems = [];
+        let currentCategory = 'all';
 
         async function initCustomerPage() {
-            // 載入動態標題
             const { data: titleSetting } = await _supabase.from('settings').select('*').eq('key', 'site_title').maybeSingle();
             if (titleSetting && titleSetting.value) {
                 const titleText = titleSetting.value;
@@ -189,13 +162,52 @@
                 document.getElementById('main-card-title').innerText = titleText + '查詢';
             }
 
-            // 載入動態菜單圖片
-            const { data: imgSetting } = await _supabase.from('settings').select('*').eq('key', 'menu_image_url').maybeSingle();
-            if (imgSetting && imgSetting.value) {
-                const imgUrl = imgSetting.value;
-                document.getElementById('menu-board-image').src = imgUrl;
-                document.getElementById('menu-image-link').href = imgUrl;
+            const { data: menuList } = await _supabase.from('menus').select('*');
+            allMenuItems = menuList || [];
+            renderMenuList();
+        }
+
+        function filterCategory(category) {
+            currentCategory = category;
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                if (btn.innerText.includes(category) || (category === 'all' && btn.innerText === '全部')) {
+                    btn.className = "cat-btn bg-luxury-gold text-luxury-900 font-bold px-4 py-2 rounded-xl text-xs transition";
+                } else {
+                    btn.className = "cat-btn bg-luxury-800 text-slate-300 hover:text-luxury-gold px-4 py-2 rounded-xl text-xs transition border border-luxury-700";
+                }
+            });
+            renderMenuList();
+        }
+
+        function renderMenuList() {
+            const container = document.getElementById('dynamic-menu-container');
+            container.innerHTML = '';
+
+            const filtered = currentCategory === 'all' ? allMenuItems : allMenuItems.filter(m => m.category === currentCategory);
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500 bg-luxury-800/40 rounded-3xl border border-luxury-700">此分類目前尚無上架餐點</div>`;
+                return;
             }
+
+            filtered.forEach(m => {
+                const imgTag = m.image_url ? `<div class="overflow-hidden rounded-2xl mb-4 h-48"><img src="${m.image_url}" class="w-full h-full object-cover hover:scale-105 transition duration-500"></div>` : '';
+                container.innerHTML += `
+                    <div class="bg-luxury-800/60 border border-luxury-700/60 p-6 rounded-3xl hover:border-luxury-gold/40 transition duration-300 space-y-3 flex flex-col justify-between">
+                        <div>
+                            ${imgTag}
+                            <div class="flex justify-between items-baseline">
+                                <div>
+                                    <span class="text-[10px] bg-luxury-gold/20 text-luxury-gold px-2.5 py-1 rounded-full uppercase tracking-wider">${m.category || '一般'}</span>
+                                    <h4 class="font-serif font-bold text-xl text-luxury-goldLight mt-2">${m.name}</h4>
+                                </div>
+                                <span class="font-serif font-semibold text-white tracking-wider text-lg">$ ${m.price}</span>
+                            </div>
+                            <p class="text-xs text-slate-400 leading-relaxed font-light mt-2">${m.description || '暫無詳細描述。'}</p>
+                        </div>
+                    </div>
+                `;
+            });
         }
 
         async function queryCustomerPoints() {
