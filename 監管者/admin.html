@@ -389,10 +389,12 @@
             if (existing) {
                 newPoints = existing.points + change;
                 if (newPoints < 0) newPoints = 0;
-                await _supabase.from('customers').update({ name, gender, points: newPoints, updated: updatedTime }).eq('store_code', currentStoreCode).eq('phone', phone);
+                const { error } = await _supabase.from('customers').update({ name, gender, points: newPoints, updated: updatedTime }).eq('store_code', currentStoreCode).eq('phone', phone);
+                if (error) { alert('更新失敗: ' + error.message); return; }
             } else {
                 if (newPoints < 0) newPoints = 0;
-                await _supabase.from('customers').insert([{ store_code: currentStoreCode, phone, name, gender, points: newPoints, updated: updatedTime }]);
+                const { error } = await _supabase.from('customers').insert([{ store_code: currentStoreCode, phone, name, gender, points: newPoints, updated: updatedTime }]);
+                if (error) { alert('新增失敗: ' + error.message); return; }
             }
 
             document.getElementById('cust-points').value = '';
