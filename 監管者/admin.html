@@ -67,9 +67,10 @@
                 <button onclick="handleLogout()" class="text-xs bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl border border-white/10">登出</button>
             </div>
 
-            <div class="flex space-x-2 bg-white p-1.5 rounded-xl border border-slate-200/80 shadow-sm w-fit">
+            <div class="flex flex-wrap gap-2 bg-white p-1.5 rounded-xl border border-slate-200/80 shadow-sm w-fit">
                 <button onclick="switchTab('stores')" id="tab-stores-btn" class="px-5 py-2.5 font-medium text-sm rounded-lg bg-amber-600 text-white shadow-sm transition">分店管理</button>
                 <button onclick="switchTab('rules')" id="tab-rules-btn" class="px-5 py-2.5 font-medium text-sm rounded-lg text-slate-600 hover:text-slate-900 transition">集點與換算規則</button>
+                <button onclick="switchTab('menu')" id="tab-menu-btn" class="px-5 py-2.5 font-medium text-sm rounded-lg text-slate-600 hover:text-slate-900 transition">菜單管理</button>
                 <button onclick="switchTab('security')" id="tab-security-btn" class="px-5 py-2.5 font-medium text-sm rounded-lg text-slate-600 hover:text-slate-900 transition">管理員密碼設定</button>
             </div>
 
@@ -98,13 +99,46 @@
             <!-- 規則設定 -->
             <div id="tab-rules-content" class="hidden bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200/80 space-y-6">
                 <h3 class="text-lg font-bold text-slate-900">⚙️ 自訂各分店點數折換規則</h3>
-                <p class="text-xs text-slate-500">可自由設定消費多少金額累積 1 點，以及 1 點可折抵多少現金。</p>
                 <select id="rule-store-select" class="w-full max-w-md bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm" onchange="loadRules()"></select>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-2xl border">
                     <div><label class="block text-xs font-bold mb-1">消費多少金額累積 1 點 (元)</label><input type="number" id="rule-earn" class="w-full bg-white border border-slate-300 rounded-xl p-3 text-sm"></div>
                     <div><label class="block text-xs font-bold mb-1">每 1 點可折抵現金 (元)</label><input type="number" id="rule-redeem" class="w-full bg-white border border-slate-300 rounded-xl p-3 text-sm"></div>
                 </div>
                 <button onclick="saveRules()" class="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-6 py-3 rounded-xl text-sm">儲存分店規則</button>
+            </div>
+
+            <!-- 菜單管理 -->
+            <div id="tab-menu-content" class="hidden space-y-6">
+                <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200/80 space-y-4">
+                    <h3 class="text-lg font-bold text-slate-900">🍽️ 新增前台菜單品項</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">所屬分店</label>
+                            <select id="menu-store-select" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">菜品名稱</label>
+                            <input type="text" id="menu-item-name" placeholder="例: 頂級A5和牛" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">價格 (元)</label>
+                            <input type="number" id="menu-item-price" placeholder="2280" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">菜品描述</label>
+                        <textarea id="menu-item-desc" placeholder="請輸入食材與口感介紹..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm" rows="2"></textarea>
+                    </div>
+                    <button onclick="addMenuItem()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-xl text-sm">新增至客戶端菜單</button>
+                </div>
+
+                <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200/80 space-y-4">
+                    <h3 class="text-lg font-bold text-slate-900">📋 現有菜單清單</h3>
+                    <table class="w-full text-left border-collapse">
+                        <thead><tr class="border-b border-slate-200 text-slate-400 text-xs uppercase"><th class="py-3 px-4">菜品名稱</th><th class="py-3 px-4">價格</th><th class="py-3 px-4">描述</th><th class="py-3 px-4 text-right">操作</th></tr></thead>
+                        <tbody id="admin-menu-table" class="divide-y divide-slate-100 text-sm"></tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- 密碼設定 -->
@@ -197,6 +231,8 @@
                 document.getElementById('header-status-badge').classList.remove('hidden');
                 renderStoreList();
                 renderRuleStoreSelect();
+                renderMenuStoreSelect();
+                renderAdminMenuList();
             } else {
                 const code = document.getElementById('login-store-code').value.trim();
                 const store = cachedStores.find(s => s.code === code);
@@ -228,8 +264,10 @@
         function switchTab(tab) {
             document.getElementById('tab-stores-content').classList.toggle('hidden', tab !== 'stores');
             document.getElementById('tab-rules-content').classList.toggle('hidden', tab !== 'rules');
+            document.getElementById('tab-menu-content').classList.toggle('hidden', tab !== 'menu');
             document.getElementById('tab-security-content').classList.toggle('hidden', tab !== 'security');
             if (tab === 'rules') renderRuleStoreSelect();
+            if (tab === 'menu') { renderMenuStoreSelect(); renderAdminMenuList(); }
         }
 
         async function fetchStores() {
@@ -277,6 +315,7 @@
                 await _supabase.from('stores').delete().eq('code', code);
                 await _supabase.from('rules').delete().eq('store_code', code);
                 await _supabase.from('customers').delete().eq('store_code', code);
+                await _supabase.from('menus').delete().eq('store_code', code);
                 renderStoreList();
             }
         }
@@ -328,6 +367,61 @@
 
             if (error) { alert('規則儲存失敗: ' + error.message); return; }
             alert('分店集點與折抵規則儲存成功！');
+        }
+
+        async function renderMenuStoreSelect() {
+            await fetchStores();
+            const sel = document.getElementById('menu-store-select');
+            sel.innerHTML = '';
+            if (cachedStores.length === 0) { sel.innerHTML = `<option value="">尚無分店</option>`; return; }
+            cachedStores.forEach(s => { sel.innerHTML += `<option value="${s.code}">${s.name} (${s.code})</option>`; });
+        }
+
+        async function addMenuItem() {
+            const store_code = document.getElementById('menu-store-select').value;
+            const name = document.getElementById('menu-item-name').value.trim();
+            const price = parseInt(document.getElementById('menu-item-price').value);
+            const description = document.getElementById('menu-item-desc').value.trim();
+
+            if (!store_code || !name || isNaN(price)) { alert('請完整填寫分店、菜品名稱與價格！'); return; }
+
+            const { error } = await _supabase.from('menus').insert([{ store_code, name, price, description }]);
+            if (error) { alert('新增菜品失敗: ' + error.message); return; }
+
+            document.getElementById('menu-item-name').value = '';
+            document.getElementById('menu-item-price').value = '';
+            document.getElementById('menu-item-desc').value = '';
+            renderAdminMenuList();
+            alert('菜品新增成功！');
+        }
+
+        async function renderAdminMenuList() {
+            const { data } = await _supabase.from('menus').select('*');
+            const tbody = document.getElementById('admin-menu-table');
+            tbody.innerHTML = '';
+            const list = data || [];
+            if (list.length === 0) { tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400">尚無菜單品項</td></tr>`; return; }
+
+            list.forEach(m => {
+                const store = cachedStores.find(s => s.code === m.store_code);
+                const storeName = store ? store.name : m.store_code;
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50">
+                        <td class="py-3 px-4 font-semibold">${m.name} <span class="text-xs text-amber-600 block">(${storeName})</span></td>
+                        <td class="py-3 px-4 text-slate-600 font-mono">$ ${m.price}</td>
+                        <td class="py-3 px-4 text-slate-500 text-xs">${m.description || '無描述'}</td>
+                        <td class="py-3 px-4 text-right"><button onclick="deleteMenuItem(${m.id})" class="text-rose-600 text-xs bg-rose-50 px-3 py-1.5 rounded-lg">刪除</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function deleteMenuItem(id) {
+            if (confirm('確定要刪除此菜品嗎？')) {
+                await _supabase.from('menus').delete().eq('id', id);
+                renderAdminMenuList();
+                alert('菜品已刪除！');
+            }
         }
 
         async function fetchCustomers(storeCode) {
