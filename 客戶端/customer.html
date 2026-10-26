@@ -92,31 +92,39 @@
             <div id="customer-cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
         </div>
 
-        <!-- 菜單分類與品項展示區 -->
+        <!-- 各公司分店菜單與分類展示區 -->
         <section class="space-y-8 pt-6 border-t border-luxury-700/50">
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div class="text-center sm:text-left space-y-1">
-                    <span class="text-xs font-bold tracking-[0.3em] text-luxury-gold uppercase">Official Menu</span>
-                    <h3 class="text-2xl font-serif font-bold text-white tracking-wide">人氣精選餐點</h3>
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="text-center md:text-left space-y-1">
+                    <span class="text-xs font-bold tracking-[0.3em] text-luxury-gold uppercase">Branch Menus</span>
+                    <h3 class="text-2xl font-serif font-bold text-white tracking-wide">各分公司精選餐點</h3>
                 </div>
-                <!-- 食物類型分類篩選按鈕 -->
-                <div class="flex flex-wrap gap-2 justify-center" id="category-filter-buttons">
-                    <button onclick="filterCategory('all')" class="cat-btn bg-luxury-gold text-luxury-900 font-bold px-4 py-2 rounded-xl text-xs transition">全部</button>
-                    <button onclick="filterCategory('超值餐')" class="cat-btn bg-luxury-800 text-slate-300 hover:text-luxury-gold px-4 py-2 rounded-xl text-xs transition border border-luxury-700">超值餐</button>
-                    <button onclick="filterCategory('咖哩類')" class="cat-btn bg-luxury-800 text-slate-300 hover:text-luxury-gold px-4 py-2 rounded-xl text-xs transition border border-luxury-700">咖哩類</button>
-                    <button onclick="filterCategory('燒咖哩')" class="cat-btn bg-luxury-800 text-slate-300 hover:text-luxury-gold px-4 py-2 rounded-xl text-xs transition border border-luxury-700">燒咖哩</button>
-                    <button onclick="filterCategory('定食')" class="cat-btn bg-luxury-800 text-slate-300 hover:text-luxury-gold px-4 py-2 rounded-xl text-xs transition border border-luxury-700">定食</button>
-                    <button onclick="filterCategory('炸物小菜')" class="cat-btn bg-luxury-800 text-slate-300 hover:text-luxury-gold px-4 py-2 rounded-xl text-xs transition border border-luxury-700">炸物小菜</button>
-                    <button onclick="filterCategory('飲料')" class="cat-btn bg-luxury-800 text-slate-300 hover:text-luxury-gold px-4 py-2 rounded-xl text-xs transition border border-luxury-700">飲料</button>
+
+                <div class="flex flex-wrap gap-3 items-center justify-center">
+                    <!-- 分公司下拉選單 -->
+                    <select id="store-select-filter" onchange="onStoreFilterChange()" class="bg-luxury-800 border border-luxury-700 text-luxury-goldLight text-xs rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-luxury-gold font-medium">
+                        <option value="all">🏢 全部公司/分店</option>
+                    </select>
                 </div>
+            </div>
+
+            <!-- 食物類型分類按鈕列 -->
+            <div class="flex flex-wrap gap-2 justify-center pt-2" id="category-filter-buttons">
+                <button onclick="filterCategory('all')" class="cat-btn bg-luxury-gold text-luxury-900 font-bold px-4 py-2 rounded-xl text-xs transition shadow">全部類別</button>
+                <button onclick="filterCategory('超值餐')" class="cat-btn bg-luxury-800 text-slate-300 hover:text-luxury-gold px-4 py-2 rounded-xl text-xs transition border border-luxury-700">超值餐</button>
+                <button onclick="filterCategory('咖哩類')" class="cat-btn bg-luxury-800 text-slate-300 hover:text-luxury-gold px-4 py-2 rounded-xl text-xs transition border border-luxury-700">咖哩類</button>
+                <button onclick="filterCategory('燒咖哩')" class="cat-btn bg-luxury-800 text-slate-300 hover:text-luxury-gold px-4 py-2 rounded-xl text-xs transition border border-luxury-700">燒咖哩</button>
+                <button onclick="filterCategory('定食')" class="cat-btn bg-luxury-800 text-slate-300 hover:text-luxury-gold px-4 py-2 rounded-xl text-xs transition border border-luxury-700">定食</button>
+                <button onclick="filterCategory('炸物小菜')" class="cat-btn bg-luxury-800 text-slate-300 hover:text-luxury-gold px-4 py-2 rounded-xl text-xs transition border border-luxury-700">炸物小菜</button>
+                <button onclick="filterCategory('飲料')" class="cat-btn bg-luxury-800 text-slate-300 hover:text-luxury-gold px-4 py-2 rounded-xl text-xs transition border border-luxury-700">飲料</button>
             </div>
 
             <!-- 動態菜單卡片容器 -->
             <div id="dynamic-menu-container" class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                <div class="col-span-full text-center py-10 text-slate-500">載入雲端菜單中...</div>
+                <div class="col-span-full text-center py-12 text-slate-500 bg-luxury-800/40 rounded-3xl border border-luxury-700">載入雲端菜單中...</div>
             </div>
 
-            <!-- 套餐組合文字專區 -->
+            <!-- 套餐組合文字說明 -->
             <div class="bg-luxury-800/60 border border-luxury-700/60 p-6 sm:p-8 rounded-3xl space-y-4">
                 <h4 class="text-xs font-bold text-luxury-gold uppercase tracking-[0.2em] text-center mb-4">套餐組合內容 (Set Meal Options)</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -144,16 +152,19 @@
 
     <script>
         const SUPABASE_URL = 'https://lqhiolijrejahmzoulcs.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxaGlvbGlqcmVqYWhtem91bGNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI5NTQ3ODYsImV4cCI6MjEwODUzMDc4Nn0.qDpea3h33N8WLK1WtL8JQ10D3y1rfiicxFqTFyx9nBs';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxaGlvbGlqcmVqYWhtem91bGNzIiwicm9sZSI6ImFub24iJlcSI6MTc5Mjk1NDc4Niwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI5NTQ3ODYsImV4cCI6MjEwODUzMDc4Nn0.qDpea3h33N8WLK1WtL8JQ10D3y1rfiicxFqTFyx9nBs';
         
         const { createClient } = supabase;
         const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentSearchedPhone = null;
         let allMenuItems = [];
+        let allStores = [];
         let currentCategory = 'all';
+        let currentStoreFilter = 'all';
 
         async function initCustomerPage() {
+            // 1. 載入動態標題
             const { data: titleSetting } = await _supabase.from('settings').select('*').eq('key', 'site_title').maybeSingle();
             if (titleSetting && titleSetting.value) {
                 const titleText = titleSetting.value;
@@ -162,16 +173,30 @@
                 document.getElementById('main-card-title').innerText = titleText + '查詢';
             }
 
+            // 2. 載入分公司/分店下拉選單
+            const { data: stores } = await _supabase.from('stores').select('*');
+            allStores = stores || [];
+            const selectEl = document.getElementById('store-select-filter');
+            allStores.forEach(s => {
+                selectEl.innerHTML += `<option value="${s.code}">${s.name} (${s.code})</option>`;
+            });
+
+            // 3. 載入所有菜單
             const { data: menuList } = await _supabase.from('menus').select('*');
             allMenuItems = menuList || [];
+            renderMenuList();
+        }
+
+        function onStoreFilterChange() {
+            currentStoreFilter = document.getElementById('store-select-filter').value;
             renderMenuList();
         }
 
         function filterCategory(category) {
             currentCategory = category;
             document.querySelectorAll('.cat-btn').forEach(btn => {
-                if (btn.innerText.includes(category) || (category === 'all' && btn.innerText === '全部')) {
-                    btn.className = "cat-btn bg-luxury-gold text-luxury-900 font-bold px-4 py-2 rounded-xl text-xs transition";
+                if (btn.innerText.includes(category) || (category === 'all' && btn.innerText === '全部類別')) {
+                    btn.className = "cat-btn bg-luxury-gold text-luxury-900 font-bold px-4 py-2 rounded-xl text-xs transition shadow";
                 } else {
                     btn.className = "cat-btn bg-luxury-800 text-slate-300 hover:text-luxury-gold px-4 py-2 rounded-xl text-xs transition border border-luxury-700";
                 }
@@ -183,23 +208,39 @@
             const container = document.getElementById('dynamic-menu-container');
             container.innerHTML = '';
 
-            const filtered = currentCategory === 'all' ? allMenuItems : allMenuItems.filter(m => m.category === currentCategory);
+            let filtered = allMenuItems;
+
+            // 依分公司篩選
+            if (currentStoreFilter !== 'all') {
+                filtered = filtered.filter(m => m.store_code === currentStoreFilter);
+            }
+
+            // 依食物類別篩選
+            if (currentCategory !== 'all') {
+                filtered = filtered.filter(m => m.category === currentCategory);
+            }
 
             if (filtered.length === 0) {
-                container.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500 bg-luxury-800/40 rounded-3xl border border-luxury-700">此分類目前尚無上架餐點</div>`;
+                container.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500 bg-luxury-800/40 rounded-3xl border border-luxury-700">目前此分類或分公司尚無上架餐點品項</div>`;
                 return;
             }
 
             filtered.forEach(m => {
+                const store = allStores.find(s => s.code === m.store_code);
+                const storeName = store ? store.name : m.store_code;
                 const imgTag = m.image_url ? `<div class="overflow-hidden rounded-2xl mb-4 h-48"><img src="${m.image_url}" class="w-full h-full object-cover hover:scale-105 transition duration-500"></div>` : '';
+
                 container.innerHTML += `
                     <div class="bg-luxury-800/60 border border-luxury-700/60 p-6 rounded-3xl hover:border-luxury-gold/40 transition duration-300 space-y-3 flex flex-col justify-between">
                         <div>
                             ${imgTag}
-                            <div class="flex justify-between items-baseline">
+                            <div class="flex justify-between items-start">
                                 <div>
-                                    <span class="text-[10px] bg-luxury-gold/20 text-luxury-gold px-2.5 py-1 rounded-full uppercase tracking-wider">${m.category || '一般'}</span>
-                                    <h4 class="font-serif font-bold text-xl text-luxury-goldLight mt-2">${m.name}</h4>
+                                    <div class="flex gap-2 items-center mb-1">
+                                        <span class="text-[10px] bg-luxury-gold/20 text-luxury-gold px-2 py-0.5 rounded-full uppercase tracking-wider">${m.category || '一般'}</span>
+                                        <span class="text-[10px] text-amber-400 font-medium">📍 ${storeName}</span>
+                                    </div>
+                                    <h4 class="font-serif font-bold text-xl text-luxury-goldLight">${m.name}</h4>
                                 </div>
                                 <span class="font-serif font-semibold text-white tracking-wider text-lg">$ ${m.price}</span>
                             </div>
