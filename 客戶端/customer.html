@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>尊榮會員禮遇與精選菜單 - 多公司聯合服務中心</title>
+    <title id="page-browser-title">多公司聯合會員中心</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -40,7 +40,7 @@
         <div class="max-w-4xl mx-auto px-6 py-5 flex justify-between items-center">
             <div class="flex items-center space-x-3">
                 <span class="text-2xl">⚜️</span>
-                <h1 class="text-lg font-bold tracking-widest gold-gradient-text uppercase">MEMBER CLUB & MENU</h1>
+                <h1 id="header-brand-title" class="text-lg font-bold tracking-widest gold-gradient-text uppercase">MEMBER CLUB</h1>
             </div>
             <a href="../監管者/admin.html" class="text-xs tracking-wider text-luxury-goldLight/70 hover:text-luxury-gold bg-luxury-800 hover:bg-luxury-700 px-4 py-2 rounded-full border border-luxury-gold/30 transition shadow-sm">
                 員工/管理後台 ↗
@@ -54,7 +54,7 @@
         <section id="login-card" class="bg-luxury-800/80 backdrop-blur-xl p-10 sm:p-12 rounded-3xl shadow-2xl border border-luxury-gold/20 space-y-8 text-center max-w-xl mx-auto transition-all">
             <div class="space-y-3">
                 <span class="text-3xl">🍸</span>
-                <h2 class="text-3xl font-serif font-bold text-white tracking-wide">多公司會員禮遇查詢</h2>
+                <h2 id="main-card-title" class="text-3xl font-serif font-bold text-white tracking-wide">多公司會員禮遇查詢</h2>
                 <p class="text-sm text-slate-400 font-light">請輸入您的貴賓手機號碼，解鎖各公司專屬會籍權益。</p>
             </div>
             
@@ -83,7 +83,7 @@
             </div>
 
             <div class="flex justify-between items-center px-2 border-b border-luxury-700/50 pb-4">
-                <h4 class="text-xs font-bold text-luxury-gold uppercase tracking-[0.2em]">各公司分店資產與動態禮遇總覽</h4>
+                <h4 class="text-xs font-bold text-luxury-gold uppercase tracking-[0.2em]">各公司資產與動態禮遇總覽</h4>
                 <span class="text-xs text-emerald-400 font-medium flex items-center gap-1.5">
                     <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> 雲端即時同步
                 </span>
@@ -92,23 +92,19 @@
             <div id="customer-cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
         </div>
 
-        <!-- 各公司動態精選菜單專區 (附帶分店切換篩選) -->
+        <!-- 完整菜單圖片與分類區 -->
         <section class="space-y-6 pt-6 border-t border-luxury-700/50">
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div class="text-center sm:text-left space-y-1">
-                    <span class="text-xs font-bold tracking-[0.3em] text-luxury-gold uppercase">Company Menu</span>
-                    <h3 class="text-3xl font-serif font-bold text-white tracking-wide">各公司精選餐點</h3>
-                </div>
-                <!-- 分店篩選下拉選單 -->
-                <div>
-                    <select id="menu-filter-store" onchange="loadDynamicMenu()" class="bg-luxury-800 border border-luxury-700 text-luxury-goldLight text-xs rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-luxury-gold">
-                        <option value="all">🔍 檢視全部公司/分店菜單</option>
-                    </select>
-                </div>
+            <div class="text-center space-y-2">
+                <span class="text-xs font-bold tracking-[0.3em] text-luxury-gold uppercase">Official Menu</span>
+                <h3 class="text-3xl font-serif font-bold text-white tracking-wide">超值餐 ｜ 咖哩類 ｜ 燒咖哩 ｜ 定食 ｜ 炸物小菜 ｜ 飲料</h3>
+                <p class="text-sm text-slate-400 font-light">點擊下方菜單圖片可放大檢視詳細內容與價格。</p>
             </div>
 
-            <div id="dynamic-menu-container" class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                <div class="col-span-full text-center py-10 text-slate-500">載入雲端菜單中...</div>
+            <div class="bg-luxury-800/60 border border-luxury-700/60 p-4 sm:p-6 rounded-3xl text-center shadow-2xl">
+                <a id="menu-image-link" href="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1200" target="_blank" class="block overflow-hidden rounded-2xl group">
+                    <img id="menu-board-image" src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1200" alt="精選菜單" class="w-full h-auto object-cover group-hover:scale-105 transition duration-500 shadow-lg">
+                </a>
+                <p class="text-xs text-slate-500 mt-3">💡 提示：管理員可隨時從後台更新此張菜單圖片</p>
             </div>
         </section>
 
@@ -128,60 +124,22 @@
         let currentSearchedPhone = null;
 
         async function initCustomerPage() {
-            // 初始化載入分店選單與全部菜單
-            const { data: storeList } = await _supabase.from('stores').select('*');
-            const stores = storeList || [];
-            const filterSel = document.getElementById('menu-filter-store');
-            
-            stores.forEach(s => {
-                filterSel.innerHTML += `<option value="${s.code}">${s.name} (${s.code})</option>`;
-            });
-
-            loadDynamicMenu();
-        }
-
-        async function loadDynamicMenu() {
-            const selectedStoreCode = document.getElementById('menu-filter-store').value;
-            let query = _supabase.from('menus').select('*');
-            
-            if (selectedStoreCode !== 'all') {
-                query = query.eq('store_code', selectedStoreCode);
+            // 載入動態標題
+            const { data: titleSetting } = await _supabase.from('settings').select('*').eq('key', 'site_title').maybeSingle();
+            if (titleSetting && titleSetting.value) {
+                const titleText = titleSetting.value;
+                document.getElementById('page-browser-title').innerText = titleText;
+                document.getElementById('header-brand-title').innerText = titleText;
+                document.getElementById('main-card-title').innerText = titleText + '查詢';
             }
 
-            const { data: menuList } = await query;
-            const { data: storeList } = await _supabase.from('stores').select('*');
-            const container = document.getElementById('dynamic-menu-container');
-            container.innerHTML = '';
-
-            const items = menuList || [];
-            const stores = storeList || [];
-
-            if (items.length === 0) {
-                container.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500 bg-luxury-800/40 rounded-3xl border border-luxury-700">此公司目前尚無上架菜單品項</div>`;
-                return;
+            // 載入動態菜單圖片
+            const { data: imgSetting } = await _supabase.from('settings').select('*').eq('key', 'menu_image_url').maybeSingle();
+            if (imgSetting && imgSetting.value) {
+                const imgUrl = imgSetting.value;
+                document.getElementById('menu-board-image').src = imgUrl;
+                document.getElementById('menu-image-link').href = imgUrl;
             }
-
-            items.forEach(m => {
-                const store = stores.find(s => s.code === m.store_code);
-                const storeName = store ? store.name : m.store_code;
-                const imgTag = m.image_url ? `<div class="overflow-hidden rounded-2xl mb-4 h-48"><img src="${m.image_url}" class="w-full h-full object-cover hover:scale-105 transition duration-500"></div>` : '';
-
-                container.innerHTML += `
-                    <div class="bg-luxury-800/60 border border-luxury-700/60 p-6 rounded-3xl hover:border-luxury-gold/40 transition duration-300 space-y-3 flex flex-col justify-between">
-                        <div>
-                            ${imgTag}
-                            <div class="flex justify-between items-baseline">
-                                <div>
-                                    <h4 class="font-serif font-bold text-xl text-luxury-goldLight">${m.name}</h4>
-                                    <span class="text-[11px] text-amber-500 uppercase tracking-wider">公司/分店：${storeName}</span>
-                                </div>
-                                <span class="font-serif font-semibold text-white tracking-wider">$ ${m.price}</span>
-                            </div>
-                            <p class="text-xs text-slate-400 leading-relaxed font-light mt-2">${m.description || '暫無詳細描述。'}</p>
-                        </div>
-                    </div>
-                `;
-            });
         }
 
         async function queryCustomerPoints() {
@@ -246,7 +204,7 @@
             document.getElementById('display-phone-sub').innerText = `已驗證貴賓手機：${phone}`;
 
             if (storeList.length === 0) {
-                container.innerHTML = `<div class="col-span-2 text-center py-12 text-slate-500 bg-luxury-800 rounded-3xl border border-luxury-700">目前尚無公司分店資料</div>`;
+                container.innerHTML = `<div class="col-span-2 text-center py-12 text-slate-500 bg-luxury-800 rounded-3xl border border-luxury-700">目前尚無公司資料</div>`;
                 return;
             }
 
