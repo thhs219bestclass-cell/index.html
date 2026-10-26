@@ -34,7 +34,7 @@
         }
     </style>
 </head>
-<body class="bg-luxury-900 text-slate-200 font-sans min-h-screen flex flex-col antialiased selection:bg-luxury-gold selection:text-luxury-900">
+<body class="bg-luxury-900 text-slate-200 font-sans min-h-screen flex flex-col antialiased selection:bg-luxury-gold selection:text-luxury-900" onload="loadDynamicMenu()">
 
     <header class="bg-luxury-900/90 backdrop-blur-md border-b border-luxury-700/60 sticky top-0 z-50">
         <div class="max-w-4xl mx-auto px-6 py-5 flex justify-between items-center">
@@ -92,7 +92,7 @@
             <div id="customer-cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
         </div>
 
-        <!-- 頂級餐廳精選菜單專區 (客戶端展示) -->
+        <!-- 頂級餐廳動態精選菜單專區 -->
         <section class="space-y-6 pt-6 border-t border-luxury-700/50">
             <div class="text-center space-y-2">
                 <span class="text-xs font-bold tracking-[0.3em] text-luxury-gold uppercase">Gastronomy Menu</span>
@@ -100,42 +100,9 @@
                 <p class="text-sm text-slate-400 font-light">嚴選頂級食材，演繹法式與日式美學的極致碰撞。</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                <!-- 菜品 1 -->
-                <div class="bg-luxury-800/60 border border-luxury-700/60 p-6 rounded-3xl hover:border-luxury-gold/40 transition duration-300 space-y-3">
-                    <div class="flex justify-between items-baseline">
-                        <h4 class="font-serif font-bold text-xl text-luxury-goldLight">頂級A5和牛佐松露波特醬</h4>
-                        <span class="font-serif font-semibold text-white tracking-wider">$ 2,280</span>
-                    </div>
-                    <p class="text-xs text-slate-400 leading-relaxed font-light">嚴選日本九州宮崎縣 A5 和牛，油花細緻均勻，搭配波特酒熬煮的黑松露醬汁，口感層次豐富奢華。</p>
-                </div>
-
-                <!-- 菜品 2 -->
-                <div class="bg-luxury-800/60 border border-luxury-700/60 p-6 rounded-3xl hover:border-luxury-gold/40 transition duration-300 space-y-3">
-                    <div class="flex justify-between items-baseline">
-                        <h4 class="font-serif font-bold text-xl text-luxury-goldLight">法國干貝襯海膽泡沫</h4>
-                        <span class="font-serif font-semibold text-white tracking-wider">$ 980</span>
-                    </div>
-                    <p class="text-xs text-slate-400 leading-relaxed font-light">北海道生食級干貝表面微煎至金黃，佐以新鮮馬糞海膽與法式蝦兵海鮮泡沫，鮮甜海味在口中綻放。</p>
-                </div>
-
-                <!-- 菜品 3 -->
-                <div class="bg-luxury-800/60 border border-luxury-700/60 p-6 rounded-3xl hover:border-luxury-gold/40 transition duration-300 space-y-3">
-                    <div class="flex justify-between items-baseline">
-                        <h4 class="font-serif font-bold text-xl text-luxury-goldLight">慢燉黑鑽松露澄清湯</h4>
-                        <span class="font-serif font-semibold text-white tracking-wider">$ 680</span>
-                    </div>
-                    <p class="text-xs text-slate-400 leading-relaxed font-light">經 24 小時慢火熬煮的黃金清湯，融入當季新鮮黑松露薄片，溫潤滋補，餘韻悠長。</p>
-                </div>
-
-                <!-- 菜品 4 -->
-                <div class="bg-luxury-800/60 border border-luxury-700/60 p-6 rounded-3xl hover:border-luxury-gold/40 transition duration-300 space-y-3">
-                    <div class="flex justify-between items-baseline">
-                        <h4 class="font-serif font-bold text-xl text-luxury-goldLight">皇家手工金箔提拉米蘇</h4>
-                        <span class="font-serif font-semibold text-white tracking-wider">$ 450</span>
-                    </div>
-                    <p class="text-xs text-slate-400 leading-relaxed font-light">義大利道地馬斯卡彭乳酪搭配濃縮咖啡香氣，頂部綴以食用級純金箔，為頂級饗宴畫下完美句點。</p>
-                </div>
+            <!-- 動態載入後台新增的菜單品項容器 -->
+            <div id="dynamic-menu-container" class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                <div class="col-span-full text-center py-10 text-slate-500">載入雲端菜單中...</div>
             </div>
         </section>
 
@@ -153,6 +120,39 @@
         const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentSearchedPhone = null;
+
+        async function loadDynamicMenu() {
+            const { data: menuList } = await _supabase.from('menus').select('*');
+            const { data: storeList } = await _supabase.from('stores').select('*');
+            const container = document.getElementById('dynamic-menu-container');
+            container.innerHTML = '';
+
+            const items = menuList || [];
+            const stores = storeList || [];
+
+            if (items.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500 bg-luxury-800/40 rounded-3xl border border-luxury-700">目前尚無上架菜單品項</div>`;
+                return;
+            }
+
+            items.forEach(m => {
+                const store = stores.find(s => s.code === m.store_code);
+                const storeName = store ? store.name : m.store_code;
+
+                container.innerHTML += `
+                    <div class="bg-luxury-800/60 border border-luxury-700/60 p-6 rounded-3xl hover:border-luxury-gold/40 transition duration-300 space-y-3">
+                        <div class="flex justify-between items-baseline">
+                            <div>
+                                <h4 class="font-serif font-bold text-xl text-luxury-goldLight">${m.name}</h4>
+                                <span class="text-[11px] text-amber-500 uppercase tracking-wider">分店：${storeName}</span>
+                            </div>
+                            <span class="font-serif font-semibold text-white tracking-wider">$ ${m.price}</span>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed font-light">${m.description || '暫無詳細描述。'}</p>
+                    </div>
+                `;
+            });
+        }
 
         async function queryCustomerPoints() {
             const phone = document.getElementById('query-phone-input').value.trim();
