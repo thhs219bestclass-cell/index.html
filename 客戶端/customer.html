@@ -2,11 +2,9 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>尊榮會員禮遇中心 - 頂級餐飲集團</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入 Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         tailwind.config = {
@@ -34,14 +32,10 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .gold-border {
-            border-image: linear-gradient(to right, #aa8c2c, #f3e5ab, #aa8c2c) 1;
-        }
     </style>
 </head>
 <body class="bg-luxury-900 text-slate-200 font-sans min-h-screen flex flex-col antialiased selection:bg-luxury-gold selection:text-luxury-900">
 
-    <!-- 頂部奢華導覽列 -->
     <header class="bg-luxury-900/90 backdrop-blur-md border-b border-luxury-700/60 sticky top-0 z-50">
         <div class="max-w-4xl mx-auto px-6 py-5 flex justify-between items-center">
             <div class="flex items-center space-x-3">
@@ -54,10 +48,8 @@
         </div>
     </header>
 
-    <!-- 主要內容區 -->
     <main class="max-w-4xl mx-auto px-6 py-14 flex-grow w-full space-y-10">
         
-        <!-- 登入與查詢區塊 (高級卡片風) -->
         <section id="login-card" class="bg-luxury-800/80 backdrop-blur-xl p-10 sm:p-12 rounded-3xl shadow-2xl border border-luxury-gold/20 space-y-8 text-center max-w-xl mx-auto transition-all">
             <div class="space-y-3">
                 <span class="text-3xl">🍸</span>
@@ -75,10 +67,7 @@
             </div>
         </section>
 
-        <!-- 查詢成功後的頂級會籍與點數列表 -->
         <div id="customer-query-result" class="space-y-8 hidden">
-            
-            <!-- 會員尊榮大卡 -->
             <div class="bg-gradient-to-br from-luxury-800 via-luxury-700 to-luxury-900 text-white p-8 sm:p-10 rounded-3xl shadow-2xl border border-luxury-gold/40 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 relative overflow-hidden">
                 <div class="absolute -right-10 -bottom-10 text-9xl text-luxury-gold/5 select-none pointer-events-none font-serif">VIP</div>
                 <div class="space-y-2 relative z-10">
@@ -91,14 +80,7 @@
                 </button>
             </div>
 
-            <div class="flex justify-between items-center px-2 border-b border-luxury-700/50 pb-4">
-                <h4 class="text-xs font-bold text-luxury-gold uppercase tracking-[0.2em]">集團旗下分店資產與禮遇總覽</h4>
-                <span class="text-xs text-emerald-400 font-medium flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> 雲端即時連線同步
-                </span>
-            </div>
-
-            <!-- 各店點數卡片容器 (餐廳風格) -->
+            <!-- 動態容器（如果未註冊會顯示聯絡店員提示，如果已註冊會顯示各店點數） -->
             <div id="customer-cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
         </div>
 
@@ -108,7 +90,6 @@
         &copy; 2026 頂級餐飲集團會員中心. All Rights Reserved.
     </footer>
 
-    <!-- Supabase 邏輯與高級餐廳 UI 渲染 -->
     <script>
         const SUPABASE_URL = 'https://lqhiolijrejahmzoulcs.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxaGlvbGlqcmVqYWhtem91bGNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI5NTQ3ODYsImV4cCI6MjEwODUzMDc4Nn0.qDpea3h33N8WLK1WtL8JQ10D3y1rfiicxFqTFyx9nBs';
@@ -120,10 +101,7 @@
 
         async function queryCustomerPoints() {
             const phone = document.getElementById('query-phone-input').value.trim();
-            if (!phone) {
-                alert('請輸入您的貴賓手機號碼');
-                return;
-            }
+            if (!phone) { alert('請輸入您的貴賓手機號碼'); return; }
             currentSearchedPhone = phone;
             await renderResults(phone);
         }
@@ -133,7 +111,6 @@
             const resultBox = document.getElementById('customer-query-result');
             const container = document.getElementById('customer-cards-container');
 
-            // 1. 同步讀取分店與該手機在各店的會員資料
             const { data: stores } = await _supabase.from('stores').select('*');
             const { data: customers } = await _supabase.from('customers').select('*').eq('phone', phone);
             const { data: rules } = await _supabase.from('rules').select('*');
@@ -142,13 +119,37 @@
             const customerRecords = customers || [];
             const ruleList = rules || [];
 
-            // 尋找顧客姓名與性別 (只要其中一間分店有填寫就採用)
+            loginCard.classList.add('hidden');
+            resultBox.classList.remove('hidden');
+            container.innerHTML = '';
+
+            // 檢查：如果該手機號碼在資料庫中完全找不到任何註冊紀錄
+            if (customerRecords.length === 0) {
+                document.getElementById('welcome-message').innerText = `查無此會籍紀錄`;
+                document.getElementById('display-phone-sub').innerText = `已驗證手機：${phone}`;
+                
+                container.innerHTML = `
+                    <div class="col-span-full bg-luxury-800/90 backdrop-blur-md p-10 rounded-3xl shadow-xl border border-luxury-gold/30 text-center space-y-4">
+                        <span class="text-4xl">🛎️</span>
+                        <h3 class="font-serif font-bold text-2xl text-white tracking-wide">尚未開立專屬會籍</h3>
+                        <p class="text-sm text-slate-400 font-light max-w-md mx-auto">此手機號碼尚未在集團旗下分店註冊。如需享有尊榮禮遇與點數累積，請洽詢現場專業店員為您辦理開卡。</p>
+                        <div class="pt-2">
+                            <button onclick="resetQuery()" class="text-xs bg-luxury-900 hover:bg-luxury-700 text-luxury-gold px-6 py-3 rounded-xl border border-luxury-gold/40 transition tracking-widest uppercase font-semibold">
+                                重新輸入號碼
+                            </button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            // 若有註冊紀錄，正常顯示會員姓名與各店點數
             let customerName = null;
-            let customerGender = '先生'; // 預設
+            let customerGender = '先生';
             for (let c of customerRecords) {
                 if (c.name) {
                     customerName = c.name;
-                    if (c.gender) customerGender = c.gender; // 支援資料庫中的 gender 欄位 ('先生' 或 '女士')
+                    if (c.gender) customerGender = c.gender;
                     break;
                 }
             }
@@ -160,10 +161,6 @@
             }
             
             document.getElementById('display-phone-sub').innerText = `已驗證貴賓手機：${phone}`;
-
-            loginCard.classList.add('hidden');
-            resultBox.classList.remove('hidden');
-            container.innerHTML = '';
 
             if (storeList.length === 0) {
                 container.innerHTML = `<div class="col-span-2 text-center py-12 text-slate-500 bg-luxury-800 rounded-3xl border border-luxury-700">目前集團尚無分店資料</div>`;
