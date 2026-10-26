@@ -69,7 +69,7 @@
 
             <div class="flex space-x-2 bg-white p-1.5 rounded-xl border border-slate-200/80 shadow-sm w-fit">
                 <button onclick="switchTab('stores')" id="tab-stores-btn" class="px-5 py-2.5 font-medium text-sm rounded-lg bg-amber-600 text-white shadow-sm transition">分店管理</button>
-                <button onclick="switchTab('rules')" id="tab-rules-btn" class="px-5 py-2.5 font-medium text-sm rounded-lg text-slate-600 hover:text-slate-900 transition">集點規則</button>
+                <button onclick="switchTab('rules')" id="tab-rules-btn" class="px-5 py-2.5 font-medium text-sm rounded-lg text-slate-600 hover:text-slate-900 transition">集點與換算規則</button>
                 <button onclick="switchTab('security')" id="tab-security-btn" class="px-5 py-2.5 font-medium text-sm rounded-lg text-slate-600 hover:text-slate-900 transition">管理員密碼設定</button>
             </div>
 
@@ -97,11 +97,12 @@
 
             <!-- 規則設定 -->
             <div id="tab-rules-content" class="hidden bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200/80 space-y-6">
-                <h3 class="text-lg font-bold text-slate-900">⚙️ 設定各店集點規則</h3>
+                <h3 class="text-lg font-bold text-slate-900">⚙️ 自訂各分店點數折換規則</h3>
+                <p class="text-xs text-slate-500">可自由設定消費多少金額累積 1 點，以及 1 點可折抵多少現金。</p>
                 <select id="rule-store-select" class="w-full max-w-md bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm" onchange="loadRules()"></select>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-2xl border">
-                    <div><label class="block text-xs font-bold mb-1">消費金額折抵 1 點 (元)</label><input type="number" id="rule-earn" class="w-full bg-white border border-slate-300 rounded-xl p-3 text-sm"></div>
-                    <div><label class="block text-xs font-bold mb-1">每 1 點折抵現金 (元)</label><input type="number" id="rule-redeem" class="w-full bg-white border border-slate-300 rounded-xl p-3 text-sm"></div>
+                    <div><label class="block text-xs font-bold mb-1">消費多少金額累積 1 點 (元)</label><input type="number" id="rule-earn" class="w-full bg-white border border-slate-300 rounded-xl p-3 text-sm"></div>
+                    <div><label class="block text-xs font-bold mb-1">每 1 點可折抵現金 (元)</label><input type="number" id="rule-redeem" class="w-full bg-white border border-slate-300 rounded-xl p-3 text-sm"></div>
                 </div>
                 <button onclick="saveRules()" class="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-6 py-3 rounded-xl text-sm">儲存分店規則</button>
             </div>
@@ -305,10 +306,13 @@
         async function loadRules() {
             const code = document.getElementById('rule-store-select').value;
             if (!code) return;
-            const { data } = await _supabase.from('rules').select('*').eq('store_code', code).single();
+            const { data } = await _supabase.from('rules').select('*').eq('store_code', code).maybeSingle();
             if (data) {
                 document.getElementById('rule-earn').value = data.earn_rate;
                 document.getElementById('rule-redeem').value = data.redeem_rate;
+            } else {
+                document.getElementById('rule-earn').value = 100;
+                document.getElementById('rule-redeem').value = 1;
             }
         }
 
@@ -317,13 +321,13 @@
             const earn_rate = parseInt(document.getElementById('rule-earn').value) || 100;
             const redeem_rate = parseInt(document.getElementById('rule-redeem').value) || 1;
             if (!code) return;
-            const { data } = await _supabase.from('rules').select('*').eq('store_code', code).single();
-            if (data) {
-                await _supabase.from('rules').update({ earn_rate, redeem_rate }).eq('store_code', code);
-            } else {
-                await _supabase.from('rules').insert([{ store_code: code, earn_rate, redeem_rate }]);
-            }
-            alert('規則儲存成功！');
+
+            const { error } = await _supabase
+                .from('rules')
+                .upsert({ store_code: code, earn_rate, redeem_rate }, { onConflict: 'store_code' });
+
+            if (error) { alert('規則儲存失敗: ' + error.message); return; }
+            alert('分店集點與折抵規則儲存成功！');
         }
 
         async function fetchCustomers(storeCode) {
@@ -374,7 +378,6 @@
             }
         }
 
-        // 升級版：使用 upsert 避免 400 錯誤與主鍵衝突
         async function updateMemberPoints() {
             const phone = document.getElementById('cust-phone').value.trim();
             const name = document.getElementById('cust-name').value.trim();
@@ -382,7 +385,6 @@
             const change = parseInt(document.getElementById('cust-points').value) || 0;
             if (!phone || !name) { alert('請填寫手機與姓名！'); return; }
 
-            // 先取得目前該會員的最新點數（如果有的話）
             const { data: existingData } = await _supabase
                 .from('customers')
                 .select('*')
@@ -400,7 +402,6 @@
 
             const updatedTime = new Date().toLocaleDateString();
 
-            // 執行 upsert 寫入資料庫
             const { error } = await _supabase
                 .from('customers')
                 .upsert({
@@ -412,11 +413,7 @@
                     updated: updatedTime
                 }, { onConflict: 'store_code,phone' });
 
-            if (error) {
-                alert('儲存失敗: ' + error.message);
-                console.error(error);
-                return;
-            }
+            if (error) { alert('儲存失敗: ' + error.message); return; }
 
             document.getElementById('cust-points').value = '';
             await renderMemberList();
