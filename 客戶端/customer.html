@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>尊榮會員禮遇中心 - 頂級餐飲集團</title>
+    <title>尊榮會員禮遇與精選菜單 - 頂級餐飲集團</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -40,7 +40,7 @@
         <div class="max-w-4xl mx-auto px-6 py-5 flex justify-between items-center">
             <div class="flex items-center space-x-3">
                 <span class="text-2xl">⚜️</span>
-                <h1 class="text-lg font-bold tracking-widest gold-gradient-text uppercase">MEMBER CLUB</h1>
+                <h1 class="text-lg font-bold tracking-widest gold-gradient-text uppercase">MEMBER CLUB & MENU</h1>
             </div>
             <a href="../監管者/admin.html" class="text-xs tracking-wider text-luxury-goldLight/70 hover:text-luxury-gold bg-luxury-800 hover:bg-luxury-700 px-4 py-2 rounded-full border border-luxury-gold/30 transition shadow-sm">
                 員工/管理後台 ↗
@@ -48,13 +48,14 @@
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto px-6 py-14 flex-grow w-full space-y-10">
+    <main class="max-w-4xl mx-auto px-6 py-14 flex-grow w-full space-y-12">
         
+        <!-- 查詢輸入區 -->
         <section id="login-card" class="bg-luxury-800/80 backdrop-blur-xl p-10 sm:p-12 rounded-3xl shadow-2xl border border-luxury-gold/20 space-y-8 text-center max-w-xl mx-auto transition-all">
             <div class="space-y-3">
                 <span class="text-3xl">🍸</span>
-                <h2 class="text-3xl font-serif font-bold text-white tracking-wide">尊榮禮遇查詢</h2>
-                <p class="text-sm text-slate-400 font-light">請輸入您的貴賓手機號碼，開啟您的專屬會籍權益。</p>
+                <h2 class="text-3xl font-serif font-bold text-white tracking-wide">尊榮禮遇與點數查詢</h2>
+                <p class="text-sm text-slate-400 font-light">請輸入您的貴賓手機號碼，解鎖專屬會籍權益。</p>
             </div>
             
             <div class="space-y-5 pt-2">
@@ -67,6 +68,7 @@
             </div>
         </section>
 
+        <!-- 查詢成功後的結果區 -->
         <div id="customer-query-result" class="space-y-8 hidden">
             <div class="bg-gradient-to-br from-luxury-800 via-luxury-700 to-luxury-900 text-white p-8 sm:p-10 rounded-3xl shadow-2xl border border-luxury-gold/40 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 relative overflow-hidden">
                 <div class="absolute -right-10 -bottom-10 text-9xl text-luxury-gold/5 select-none pointer-events-none font-serif">VIP</div>
@@ -80,9 +82,62 @@
                 </button>
             </div>
 
-            <!-- 動態容器（如果未註冊會顯示聯絡店員提示，如果已註冊會顯示各店點數） -->
+            <div class="flex justify-between items-center px-2 border-b border-luxury-700/50 pb-4">
+                <h4 class="text-xs font-bold text-luxury-gold uppercase tracking-[0.2em]">集團旗下分店資產與動態禮遇規則</h4>
+                <span class="text-xs text-emerald-400 font-medium flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> 雲端即時同步
+                </span>
+            </div>
+
             <div id="customer-cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
         </div>
+
+        <!-- 頂級餐廳精選菜單專區 (客戶端展示) -->
+        <section class="space-y-6 pt-6 border-t border-luxury-700/50">
+            <div class="text-center space-y-2">
+                <span class="text-xs font-bold tracking-[0.3em] text-luxury-gold uppercase">Gastronomy Menu</span>
+                <h3 class="text-3xl font-serif font-bold text-white tracking-wide">集團精選主廚饗宴</h3>
+                <p class="text-sm text-slate-400 font-light">嚴選頂級食材，演繹法式與日式美學的極致碰撞。</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                <!-- 菜品 1 -->
+                <div class="bg-luxury-800/60 border border-luxury-700/60 p-6 rounded-3xl hover:border-luxury-gold/40 transition duration-300 space-y-3">
+                    <div class="flex justify-between items-baseline">
+                        <h4 class="font-serif font-bold text-xl text-luxury-goldLight">頂級A5和牛佐松露波特醬</h4>
+                        <span class="font-serif font-semibold text-white tracking-wider">$ 2,280</span>
+                    </div>
+                    <p class="text-xs text-slate-400 leading-relaxed font-light">嚴選日本九州宮崎縣 A5 和牛，油花細緻均勻，搭配波特酒熬煮的黑松露醬汁，口感層次豐富奢華。</p>
+                </div>
+
+                <!-- 菜品 2 -->
+                <div class="bg-luxury-800/60 border border-luxury-700/60 p-6 rounded-3xl hover:border-luxury-gold/40 transition duration-300 space-y-3">
+                    <div class="flex justify-between items-baseline">
+                        <h4 class="font-serif font-bold text-xl text-luxury-goldLight">法國干貝襯海膽泡沫</h4>
+                        <span class="font-serif font-semibold text-white tracking-wider">$ 980</span>
+                    </div>
+                    <p class="text-xs text-slate-400 leading-relaxed font-light">北海道生食級干貝表面微煎至金黃，佐以新鮮馬糞海膽與法式蝦兵海鮮泡沫，鮮甜海味在口中綻放。</p>
+                </div>
+
+                <!-- 菜品 3 -->
+                <div class="bg-luxury-800/60 border border-luxury-700/60 p-6 rounded-3xl hover:border-luxury-gold/40 transition duration-300 space-y-3">
+                    <div class="flex justify-between items-baseline">
+                        <h4 class="font-serif font-bold text-xl text-luxury-goldLight">慢燉黑鑽松露澄清湯</h4>
+                        <span class="font-serif font-semibold text-white tracking-wider">$ 680</span>
+                    </div>
+                    <p class="text-xs text-slate-400 leading-relaxed font-light">經 24 小時慢火熬煮的黃金清湯，融入當季新鮮黑松露薄片，溫潤滋補，餘韻悠長。</p>
+                </div>
+
+                <!-- 菜品 4 -->
+                <div class="bg-luxury-800/60 border border-luxury-700/60 p-6 rounded-3xl hover:border-luxury-gold/40 transition duration-300 space-y-3">
+                    <div class="flex justify-between items-baseline">
+                        <h4 class="font-serif font-bold text-xl text-luxury-goldLight">皇家手工金箔提拉米蘇</h4>
+                        <span class="font-serif font-semibold text-white tracking-wider">$ 450</span>
+                    </div>
+                    <p class="text-xs text-slate-400 leading-relaxed font-light">義大利道地馬斯卡彭乳酪搭配濃縮咖啡香氣，頂部綴以食用級純金箔，為頂級饗宴畫下完美句點。</p>
+                </div>
+            </div>
+        </section>
 
     </main>
 
@@ -123,7 +178,6 @@
             resultBox.classList.remove('hidden');
             container.innerHTML = '';
 
-            // 檢查：如果該手機號碼在資料庫中完全找不到任何註冊紀錄
             if (customerRecords.length === 0) {
                 document.getElementById('welcome-message').innerText = `查無此會籍紀錄`;
                 document.getElementById('display-phone-sub').innerText = `已驗證手機：${phone}`;
@@ -143,7 +197,6 @@
                 return;
             }
 
-            // 若有註冊紀錄，正常顯示會員姓名與各店點數
             let customerName = null;
             let customerGender = '先生';
             for (let c of customerRecords) {
@@ -193,7 +246,7 @@
                         </div>
 
                         <div class="text-xs text-luxury-goldLight/90 bg-luxury-900/40 border border-luxury-gold/20 p-4 rounded-2xl flex items-center justify-between tracking-wide">
-                            <span class="text-slate-400">💎 禮遇回饋規則</span>
+                            <span class="text-slate-400">💎 即時禮遇規則</span>
                             <span class="font-semibold">消費滿 $${rData.earn_rate} 累積 1 點 ｜ 1 點折抵 $${rData.redeem_rate}</span>
                         </div>
                     </div>
