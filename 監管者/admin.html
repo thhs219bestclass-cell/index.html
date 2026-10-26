@@ -374,6 +374,7 @@
             }
         }
 
+        // 升級版：使用 upsert 避免 400 錯誤與主鍵衝突
         async function updateMemberPoints() {
             const phone = document.getElementById('cust-phone').value.trim();
             const name = document.getElementById('cust-name').value.trim();
@@ -381,20 +382,40 @@
             const change = parseInt(document.getElementById('cust-points').value) || 0;
             if (!phone || !name) { alert('請填寫手機與姓名！'); return; }
 
-            const list = cachedCustomers[currentStoreCode] || [];
-            let existing = list.find(item => item.phone === phone);
-            let newPoints = change;
-            const updatedTime = new Date().toLocaleDateString();
+            // 先取得目前該會員的最新點數（如果有的話）
+            const { data: existingData } = await _supabase
+                .from('customers')
+                .select('*')
+                .eq('store_code', currentStoreCode)
+                .eq('phone', phone)
+                .maybeSingle();
 
-            if (existing) {
-                newPoints = existing.points + change;
+            let newPoints = change;
+            if (existingData) {
+                newPoints = (existingData.points || 0) + change;
                 if (newPoints < 0) newPoints = 0;
-                const { error } = await _supabase.from('customers').update({ name, gender, points: newPoints, updated: updatedTime }).eq('store_code', currentStoreCode).eq('phone', phone);
-                if (error) { alert('更新失敗: ' + error.message); return; }
             } else {
                 if (newPoints < 0) newPoints = 0;
-                const { error } = await _supabase.from('customers').insert([{ store_code: currentStoreCode, phone, name, gender, points: newPoints, updated: updatedTime }]);
-                if (error) { alert('新增失敗: ' + error.message); return; }
+            }
+
+            const updatedTime = new Date().toLocaleDateString();
+
+            // 執行 upsert 寫入資料庫
+            const { error } = await _supabase
+                .from('customers')
+                .upsert({
+                    store_code: currentStoreCode,
+                    phone: phone,
+                    name: name,
+                    gender: gender,
+                    points: newPoints,
+                    updated: updatedTime
+                }, { onConflict: 'store_code,phone' });
+
+            if (error) {
+                alert('儲存失敗: ' + error.message);
+                console.error(error);
+                return;
             }
 
             document.getElementById('cust-points').value = '';
